@@ -75,11 +75,18 @@ namespace EscapeTheTower.Map
         /// <summary>当前玩家所在房间 ID</summary>
         public int CurrentRoomID { get; private set; }
 
+        /// <summary>当前低层瓦片地图（供渲染器/碰撞系统使用）</summary>
+        public FloorGrid CurrentGrid { get; private set; }
+
         // === 已使用的主题（每局不重复） ===
         private List<BiomeConfig_SO> _usedBiomes = new List<BiomeConfig_SO>();
 
         // === 房间 ID 分配器 ===
         private int _nextRoomID = 1;
+
+        // === 默认地图尺寸 ===
+        private const int DEFAULT_MAP_WIDTH = 51;
+        private const int DEFAULT_MAP_HEIGHT = 51;
 
         // =====================================================================
         //  初始化
@@ -144,7 +151,7 @@ namespace EscapeTheTower.Map
         // =====================================================================
 
         /// <summary>
-        /// 程序化生成一层地图
+        /// 程序化生成一层地图 —— 委托 FloorGenerator 生成实际瓦片，再构建高层 FloorData
         /// </summary>
         private void GenerateFloor(BiomeConfig_SO biome)
         {
@@ -154,97 +161,118 @@ namespace EscapeTheTower.Map
                 BiomeConfig = biome,
             };
 
-            // 计算房间总数
-            int totalRooms = Random.Range(biome.minRoomCount, biome.maxRoomCount + 1);
+            // 地图尺寸和种子
+            int mapWidth = DEFAULT_MAP_WIDTH;
+            int mapHeight = DEFAULT_MAP_HEIGHT;
+            int seed = Random.Range(int.MinValue, int.MaxValue);
 
-            // 起始房（玩家出生点）
-            var startRoom = CreateRoom(RoomType.Combat, new Vector2Int(0, 0));
-            startRoom.IsExplored = true; // 起始房自动探索
-            CurrentFloorData.StartRoomID = startRoom.RoomID;
-            CurrentRoomID = startRoom.RoomID;
-
-            // 按权重分配房间类型
-            int combatCount = Mathf.RoundToInt(totalRooms * biome.combatRoomWeight);
-            int treasureCount = Mathf.RoundToInt(totalRooms * biome.treasureRoomWeight);
-            int eventCount = totalRooms - combatCount - treasureCount - 2; // -2 是 Boss 房和楼梯房
-            eventCount = Mathf.Max(0, eventCount);
-
-            // 生成战斗房
-            for (int i = 0; i < combatCount; i++)
+            // 从 BiomeConfig 构建 FloorGenConfig
+            FloorGenConfig genConfig = null;
+            if (biome != null)
             {
-                Vector2Int pos = GetNextGridPosition(i + 1);
-                CreateRoom(RoomType.Combat, pos);
+                genConfig = new FloorGenConfig
+                {
+                    TargetRoomCount = Random.Range(biome.minRoomCount, biome.maxRoomCount + 1),
+                    FloorLevel = CurrentFloor,
+                };
             }
 
-            // 生成奖励房
-            for (int i = 0; i < treasureCount; i++)
+            // 委托 FloorGenerator 生成完整瓦片地图
+            CurrentGrid = FloorGenerator.Generate(mapWidth, mapHeight, seed, genConfig);
+
+            // 从 FloorGrid 构建高层 FloorData（RoomData → RoomNode 映射）
+            _nextRoomID = 1;
+            foreach (var roomData in CurrentGrid.Rooms)
             {
-                Vector2Int pos = GetNextGridPosition(combatCount + i + 1);
-                CreateRoom(RoomType.Treasure, pos);
+                var roomNode = new RoomNode
+                {
+                    RoomID = roomData.RoomID,
+                    Type = roomData.Type,
+                    GridPosition = roomData.Center,
+                    IsExplored = false,
+                    IsCleared = false,
+                };
+                CurrentFloorData.Rooms.Add(roomNode);
+                _nextRoomID = Mathf.Max(_nextRoomID, roomData.RoomID + 1);
             }
 
-            // 生成事件房（随机选择具体类型）
-            RoomType[] eventTypes = { RoomType.Merchant, RoomType.Forge, RoomType.Shrine, RoomType.Campfire };
-            for (int i = 0; i < eventCount; i++)
+            // 从 FloorGrid 设置特殊房间 ID
+            var spawnRoom = CurrentGrid.GetRoomAt(CurrentGrid.SpawnPoint.x, CurrentGrid.SpawnPoint.y);
+            if (spawnRoom != null)
             {
-                RoomType eventType = eventTypes[Random.Range(0, eventTypes.Length)];
-                Vector2Int pos = GetNextGridPosition(combatCount + treasureCount + i + 1);
-                CreateRoom(eventType, pos);
+                CurrentFloorData.StartRoomID = spawnRoom.RoomID;
+                CurrentRoomID = spawnRoom.RoomID;
+                // 起始房自动探索
+                var startNode = CurrentFloorData.Rooms.Find(r => r.RoomID == spawnRoom.RoomID);
+                if (startNode != null) startNode.IsExplored = true;
             }
 
-            // Boss 房（地图最远端）
-            Vector2Int bossPos = GetNextGridPosition(totalRooms - 1);
-            var bossRoom = CreateRoom(RoomType.Boss, bossPos);
-            CurrentFloorData.BossRoomID = bossRoom.RoomID;
+            // 查找 Boss 房和楼梯房
+            foreach (var roomData in CurrentGrid.Rooms)
+            {
+                if (roomData.Type == RoomType.Boss)
+                    CurrentFloorData.BossRoomID = roomData.RoomID;
+                if (roomData.Type == RoomType.Stairs)
+                    CurrentFloorData.StairsRoomID = roomData.RoomID;
+            }
 
-            // 楼梯房（紧邻 Boss 房后方）
-            Vector2Int stairsPos = new Vector2Int(bossPos.x + 1, bossPos.y);
-            var stairsRoom = CreateRoom(RoomType.Stairs, stairsPos);
-            CurrentFloorData.StairsRoomID = stairsRoom.RoomID;
+            // 构建房间连接图（基于 FloorGrid 中房间入口的物理连通性）
+            BuildRoomConnections();
 
-            // 连接相邻房间（简单线性连接，后续可替换为更复杂的图结构）
-            ConnectRoomsLinear();
-
-            Debug.Log($"[MapManager] 生成第 {CurrentFloor} 层地图，共 {CurrentFloorData.Rooms.Count} 个房间。");
+            Debug.Log($"[MapManager] 生成第 {CurrentFloor} 层地图，" +
+                      $"共 {CurrentFloorData.Rooms.Count} 个房间，" +
+                      $"种子={seed}");
         }
 
         /// <summary>
-        /// 创建一个房间节点
+        /// 从 FloorGrid 的物理连通性构建 RoomNode 间的邻接关系
+        /// 两个房间共享走廊连接则视为相邻
         /// </summary>
-        private RoomNode CreateRoom(RoomType type, Vector2Int gridPos)
+        private void BuildRoomConnections()
         {
-            var room = new RoomNode
+            if (CurrentGrid == null) return;
+
+            // 扫描所有走廊格，检查是否连接两个不同房间
+            var connectedPairs = new HashSet<(int, int)>();
+
+            for (int x = 0; x < CurrentGrid.Width; x++)
             {
-                RoomID = _nextRoomID++,
-                Type = type,
-                GridPosition = gridPos,
-                IsExplored = false,
-                IsCleared = false,
-            };
-            CurrentFloorData.Rooms.Add(room);
-            return room;
+                for (int y = 0; y < CurrentGrid.Height; y++)
+                {
+                    int roomId = CurrentGrid.RoomMap[x, y];
+                    if (roomId == 0) continue; // 走廊或墙壁
+
+                    // 检查四邻格是否属于不同房间
+                    CheckConnection(x + 1, y, roomId, connectedPairs);
+                    CheckConnection(x - 1, y, roomId, connectedPairs);
+                    CheckConnection(x, y + 1, roomId, connectedPairs);
+                    CheckConnection(x, y - 1, roomId, connectedPairs);
+                }
+            }
+
+            // 将连接关系写入 RoomNode
+            foreach (var (a, b) in connectedPairs)
+            {
+                var roomA = CurrentFloorData.Rooms.Find(r => r.RoomID == a);
+                var roomB = CurrentFloorData.Rooms.Find(r => r.RoomID == b);
+                if (roomA != null && !roomA.ConnectedRoomIDs.Contains(b))
+                    roomA.ConnectedRoomIDs.Add(b);
+                if (roomB != null && !roomB.ConnectedRoomIDs.Contains(a))
+                    roomB.ConnectedRoomIDs.Add(a);
+            }
         }
 
-        /// <summary>
-        /// 简单的网格位置生成（蛇形排列）
-        /// </summary>
-        private Vector2Int GetNextGridPosition(int index)
+        /// <summary>检查相邻格是否为不同房间，记录连接对</summary>
+        private void CheckConnection(int nx, int ny, int currentRoomId, HashSet<(int, int)> pairs)
         {
-            int row = index / 5;
-            int col = (row % 2 == 0) ? (index % 5) : (4 - index % 5);
-            return new Vector2Int(col, row);
-        }
-
-        /// <summary>
-        /// 线性连接所有房间（按生成顺序首尾相连）
-        /// </summary>
-        private void ConnectRoomsLinear()
-        {
-            var rooms = CurrentFloorData.Rooms;
-            for (int i = 0; i < rooms.Count - 1; i++)
+            if (!CurrentGrid.InBounds(nx, ny)) return;
+            int neighborRoomId = CurrentGrid.RoomMap[nx, ny];
+            if (neighborRoomId > 0 && neighborRoomId != currentRoomId)
             {
-                rooms[i].ConnectedRoomIDs.Add(rooms[i + 1].RoomID);
-                rooms[i + 1].ConnectedRoomIDs.Add(rooms[i].RoomID);
+                // 规范化为 (小ID, 大ID) 避免重复
+                int a = Mathf.Min(currentRoomId, neighborRoomId);
+                int b = Mathf.Max(currentRoomId, neighborRoomId);
+                pairs.Add((a, b));
             }
         }
 

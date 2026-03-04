@@ -60,6 +60,9 @@ namespace EscapeTheTower.Data
         /// <summary>存档文件名</summary>
         private const string SAVE_FILE_NAME = "mota_save.json";
 
+        /// <summary>当前存档版本号（每次修改 SaveData 结构时递增）</summary>
+        private const int CURRENT_SAVE_VERSION = 1;
+
         /// <summary>自动存档间隔（秒）</summary>
         private const float AUTO_SAVE_INTERVAL = 120f;
 
@@ -105,17 +108,35 @@ namespace EscapeTheTower.Data
             // 收集地图数据
             CollectMapData();
 
-            // 序列化为 JSON 并写入文件
+            // 序列化为 JSON 并通过原子写入保存到文件
+            // 先写入临时文件，成功后替换正式文件，防止写入中途崩溃导致存档损坏
             string json = JsonUtility.ToJson(CurrentSave, true);
+            string savePath = GetSavePath();
+            string tempPath = savePath + ".tmp";
 
             try
             {
-                File.WriteAllText(GetSavePath(), json);
-                Debug.Log($"[SaveSystem] 存档成功：{GetSavePath()}");
+                // 第一步：写入临时文件
+                File.WriteAllText(tempPath, json);
+
+                // 第二步：原子替换（若目标已存在则先备份再替换）
+                if (File.Exists(savePath))
+                {
+                    File.Replace(tempPath, savePath, savePath + ".bak");
+                }
+                else
+                {
+                    File.Move(tempPath, savePath);
+                }
+
+                Debug.Log($"[SaveSystem] 存档成功：{savePath}");
             }
             catch (Exception e)
             {
                 Debug.LogError($"[SaveSystem] 存档失败：{e.Message}");
+                // 清理可能残留的临时文件
+                try { if (File.Exists(tempPath)) File.Delete(tempPath); }
+                catch { /* 忽略清理失败 */ }
             }
         }
 
@@ -167,10 +188,18 @@ namespace EscapeTheTower.Data
                 string json = File.ReadAllText(path);
                 CurrentSave = JsonUtility.FromJson<SaveData>(json);
 
-                // 版本兼容性检测
-                if (CurrentSave.saveVersion != 1)
+                // 版本迁移管线：从旧版本逐步升级到当前版本
+                if (CurrentSave.saveVersion < CURRENT_SAVE_VERSION)
                 {
-                    Debug.LogWarning($"[SaveSystem] 存档版本不匹配：{CurrentSave.saveVersion} vs 1。尝试兼容加载。");
+                    Debug.Log($"[SaveSystem] 检测到旧版存档 v{CurrentSave.saveVersion}，开始迁移至 v{CURRENT_SAVE_VERSION}...");
+                    MigrateSaveData(CurrentSave);
+                    CurrentSave.saveVersion = CURRENT_SAVE_VERSION;
+                    Save(); // 迁移后自动回写
+                    Debug.Log("[SaveSystem] 存档迁移完成并已回写。");
+                }
+                else if (CurrentSave.saveVersion > CURRENT_SAVE_VERSION)
+                {
+                    Debug.LogWarning($"[SaveSystem] 存档版本 v{CurrentSave.saveVersion} 高于当前 v{CURRENT_SAVE_VERSION}！可能不兼容。");
                 }
 
                 Debug.Log($"[SaveSystem] 读档成功！楼层={CurrentSave.currentFloor} " +
@@ -182,6 +211,25 @@ namespace EscapeTheTower.Data
                 Debug.LogError($"[SaveSystem] 读档失败：{e.Message}");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 存档版本迁移管线
+        /// 每次修改 SaveData 结构时，在此添加对应版本的迁移逻辑
+        /// 迁移按版本号顺序逐步执行（v1→v2→v3...）
+        /// </summary>
+        private void MigrateSaveData(SaveData data)
+        {
+            // === v1 → v2 迁移示例（待未来结构变更时启用） ===
+            // if (data.saveVersion < 2)
+            // {
+            //     // 例：新增 inventory 字段，设置默认值
+            //     // data.inventorySlots = new List<string>();
+            //     data.saveVersion = 2;
+            //     Debug.Log("[SaveSystem] v1 → v2: 已补充默认值");
+            // }
+            //
+            // if (data.saveVersion < 3) { ... }
         }
 
         // =====================================================================

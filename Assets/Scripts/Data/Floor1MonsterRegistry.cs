@@ -296,5 +296,13 @@ namespace EscapeTheTower.Data
                 CreateReaperApprentice(),
             };
         }
+
+        /// <summary>
+        /// 获取第一层 Boss 数据
+        /// </summary>
+        public static MonsterData_SO GetBossData()
+        {
+            return CreateFallenHero();
+        }
     }
 }

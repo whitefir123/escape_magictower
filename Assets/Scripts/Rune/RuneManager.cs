@@ -17,6 +17,23 @@ using EscapeTheTower.Data;
 namespace EscapeTheTower.Rune
 {
     /// <summary>
+    /// 符文运行时持有记录 —— 与 SO 资产隔离，防止编辑器数据污染
+    /// </summary>
+    public class AcquiredRuneEntry
+    {
+        /// <summary>符文配置数据（只读引用，不修改 SO 字段）</summary>
+        public RuneData_SO Data { get; }
+        /// <summary>当前等级（运行时叠加，初始为 1）</summary>
+        public int Level { get; set; }
+
+        public AcquiredRuneEntry(RuneData_SO data)
+        {
+            Data = data;
+            Level = 1;
+        }
+    }
+
+    /// <summary>
     /// 符文管理器 —— 核心抽取与管理逻辑
     /// </summary>
     public class RuneManager : MonoBehaviour
@@ -31,8 +48,8 @@ namespace EscapeTheTower.Rune
         [Tooltip("全部可用的职业专属机制符文 SO 列表")]
         [SerializeField] private List<RuneData_SO> classSpecificRunePool = new List<RuneData_SO>();
 
-        /// <summary>当前已获取的所有符文</summary>
-        public List<RuneData_SO> AcquiredRunes { get; private set; } = new List<RuneData_SO>();
+        /// <summary>当前已获取的所有符文（运行时数据，不修改 SO 资产）</summary>
+        public List<AcquiredRuneEntry> AcquiredRunes { get; private set; } = new List<AcquiredRuneEntry>();
 
         // === 保底计数器 ===
         private int _pityCounter = 0;
@@ -85,21 +102,18 @@ namespace EscapeTheTower.Rune
                 return;
             }
 
+            // Fisher-Yates 部分洗牌：只需打乱前 3 个位置，O(3) 确保不重复
             _currentDraftChoices = new RuneData_SO[3];
-            var usedIndices = new HashSet<int>();
+            int poolCount = attributeRunePool.Count;
+            int[] indices = new int[poolCount];
+            for (int i = 0; i < poolCount; i++) indices[i] = i;
 
             for (int i = 0; i < 3; i++)
             {
-                int idx;
-                int safety = 100;
-                do
-                {
-                    idx = Random.Range(0, attributeRunePool.Count);
-                    safety--;
-                } while (usedIndices.Contains(idx) && safety > 0);
-
-                usedIndices.Add(idx);
-                _currentDraftChoices[i] = attributeRunePool[idx];
+                int j = Random.Range(i, poolCount);
+                // 交换
+                (indices[i], indices[j]) = (indices[j], indices[i]);
+                _currentDraftChoices[i] = attributeRunePool[indices[i]];
             }
 
             Debug.Log($"[RuneManager] 属性符文三选一：" +
@@ -107,7 +121,12 @@ namespace EscapeTheTower.Rune
                       $"{_currentDraftChoices[1].runeName} | " +
                       $"{_currentDraftChoices[2].runeName}");
 
-            // TODO: 暂停游戏，弹出三选一 UI
+            // 暂停游戏，通知 UI 弹出三选一面板
+            EventManager.Publish(new OnRuneDraftReadyEvent
+            {
+                Meta = new EventMeta(0),
+                AcquisitionType = RuneAcquisitionType.KillDrop,
+            });
         }
 
         // =====================================================================
@@ -163,7 +182,12 @@ namespace EscapeTheTower.Rune
                       $"{_currentDraftChoices[1]?.runeName ?? "空"} | " +
                       $"{_currentDraftChoices[2]?.runeName ?? "空"}");
 
-            // TODO: 暂停游戏，弹出三选一 UI
+            // 暂停游戏，通知 UI 弹出三选一面板
+            EventManager.Publish(new OnRuneDraftReadyEvent
+            {
+                Meta = new EventMeta(0),
+                AcquisitionType = RuneAcquisitionType.LevelUp,
+            });
         }
 
         // =====================================================================
@@ -231,22 +255,26 @@ namespace EscapeTheTower.Rune
             if (selectedRune == null) return;
 
             // 检查是否已拥有（重复获取升级）
-            var existing = AcquiredRunes.Find(r => r.runeID == selectedRune.runeID);
+            // 使用 AcquiredRuneEntry 隔离运行时数据，绝不修改 SO 资产
+            var existing = AcquiredRunes.Find(r => r.Data.runeID == selectedRune.runeID);
             if (existing != null)
             {
-                existing.currentLevel++;
-                Debug.Log($"[RuneManager] 符文 '{existing.runeName}' 升级至 Lv.{existing.currentLevel}");
+                existing.Level++;
+                Debug.Log($"[RuneManager] 符文 '{existing.Data.runeName}' 升级至 Lv.{existing.Level}");
             }
             else
             {
-                AcquiredRunes.Add(selectedRune);
+                AcquiredRunes.Add(new AcquiredRuneEntry(selectedRune));
                 Debug.Log($"[RuneManager] 获得符文 '{selectedRune.runeName}' ({selectedRune.rarity})");
             }
 
             _currentDraftChoices = null;
 
-            // TODO: 关闭三选一 UI，恢复游戏
-            // TODO: 通知 EntityBase 添加符文到管线层级4
+            // 通知系统恢复游戏
+            EventManager.Publish(new OnRuneDraftCompleteEvent
+            {
+                Meta = new EventMeta(0),
+            });
         }
 
         /// <summary>
@@ -256,6 +284,12 @@ namespace EscapeTheTower.Rune
         {
             _currentDraftChoices = null;
             Debug.Log("[RuneManager] 玩家放弃了本次符文选择。");
+
+            // 通知系统恢复游戏（与 SelectRune 统一发布点）
+            EventManager.Publish(new OnRuneDraftCompleteEvent
+            {
+                Meta = new EventMeta(0),
+            });
         }
 
         /// <summary>

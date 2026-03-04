@@ -1,11 +1,10 @@
 // ============================================================================
 // 逃离魔塔 - 英雄主控制器 (HeroController)
-// 管理英雄的移动、攻击、技能释放、经验升级等核心逻辑。
-// MVP 阶段首发职业：流浪剑客 (Vagabond Swordsman)
+// 编排器角色：管理英雄生命周期、移动控制、子组件协调。
+// 技能/物品/战斗逻辑已拆分至 HeroSkillHandler / HeroInventory / HeroCombatHandler。
 //
-// 来源：GameData_Blueprints/05_Hero_Classes_And_Skills.md
-//       DesignDocs/03_Combat_System.md
-//       DesignDocs/07_UI_and_UX.md
+// 来源：DesignDocs/03_Combat_System.md
+//       GameData_Blueprints/05_Hero_Classes_And_Skills.md
 // ============================================================================
 
 using UnityEngine;
@@ -16,9 +15,12 @@ using EscapeTheTower.Combat;
 namespace EscapeTheTower.Entity.Hero
 {
     /// <summary>
-    /// 英雄主控制器 —— 驱动英雄的全部行为逻辑
+    /// 英雄主控制器 —— 编排器，协调各子组件的初始化与生命周期
     /// </summary>
     [RequireComponent(typeof(HeroInputHandler))]
+    [RequireComponent(typeof(HeroSkillHandler))]
+    [RequireComponent(typeof(HeroInventory))]
+    [RequireComponent(typeof(HeroCombatHandler))]
     public class HeroController : EntityBase
     {
         [Header("=== 英雄专属数据 ===")]
@@ -27,33 +29,74 @@ namespace EscapeTheTower.Entity.Hero
         // === 输入处理器 ===
         private HeroInputHandler _input;
 
-        // === 经验与等级 ===
-        public int CurrentLevel { get; private set; } = 1;
-        public int CurrentExp { get; private set; } = 0;
-        public int ExpToNextLevel { get; private set; }
+        // === 格子移动 ===
+        private GridMovement _gridMovement;
 
-        // === 金币 ===
-        public int Gold { get; private set; } = 0;
+        // === 子组件引用 ===
+        private HeroSkillHandler _skillHandler;
+        private HeroInventory _inventory;
+        private HeroCombatHandler _combatHandler;
 
-        // === 移动 ===
-        private Rigidbody2D _rb;
-        private Vector3 _clickMoveTarget;
-        private bool _isClickMoving;
-
-        // === 技能冷却计时器 ===
-        private float _skill1CooldownTimer;
-        private float _skill2CooldownTimer;
-        private float _ultimateCooldownTimer; // CD 记录（大招实际由怒气驱动，CD 仅防连点）
-        private float _evasionCooldownTimer;
+        // === 移动速度缓存（避免每帧重复调用 SetMoveSpeed） ===
+        private float _lastMoveSpeed = -1f;
 
         // === 战斗状态 ===
         private bool _isInBattle;
 
-        // === 剑客被动：剑路层数 ===
-        private int _swordPathStacks;
-        private float _swordPathDecayTimer;
-        private const float SWORD_PATH_DECAY_DELAY = 3.0f;     // 脱战3秒后衰减
-        private const int SWORD_PATH_MAX_STACKS = 10;
+        // =====================================================================
+        //  门面属性 —— 委托给子组件，保持外部调用方零修改
+        // =====================================================================
+
+        /// <summary>当前等级</summary>
+        public int CurrentLevel => _inventory != null ? _inventory.CurrentLevel : 1;
+
+        /// <summary>当前经验值</summary>
+        public int CurrentExp => _inventory != null ? _inventory.CurrentExp : 0;
+
+        /// <summary>升级所需经验</summary>
+        public int ExpToNextLevel => _inventory != null ? _inventory.ExpToNextLevel : 100;
+
+        /// <summary>金币</summary>
+        public int Gold
+        {
+            get => _inventory != null ? _inventory.Gold : 0;
+            // 兼容直接赋值（如拾取金币堆时 Gold += value）
+            set { if (_inventory != null) _inventory.Gold = value; }
+        }
+
+        /// <summary>铜钥匙</summary>
+        public int KeyBronze => _inventory != null ? _inventory.KeyBronze : 0;
+        /// <summary>银钥匙</summary>
+        public int KeySilver => _inventory != null ? _inventory.KeySilver : 0;
+        /// <summary>金钥匙</summary>
+        public int KeyGold => _inventory != null ? _inventory.KeyGold : 0;
+
+        /// <summary>是否处于战斗状态（供技能系统查询剑路衰减）</summary>
+        public bool IsInBattle => _isInBattle;
+
+        // =====================================================================
+        //  门面方法 —— 委托给子组件
+        // =====================================================================
+
+        /// <summary>增加钥匙</summary>
+        public void AddKey(DoorTier tier) => _inventory?.AddKey(tier);
+
+        /// <summary>消耗钥匙（开门时调用），返回是否成功</summary>
+        public bool ConsumeKey(DoorTier tier) => _inventory != null && _inventory.ConsumeKey(tier);
+
+        /// <summary>普攻命中回调（由 HeroCombatHandler 触发，委托给技能系统）</summary>
+        public void OnNormalAttackHit() => _skillHandler?.OnNormalAttackHit();
+
+        /// <summary>设置战斗状态</summary>
+        public void SetBattleState(bool inBattle)
+        {
+            _isInBattle = inBattle;
+            // 脱战时触发击杀后延迟保护（防止连续碰撞）
+            if (!inBattle && _combatHandler != null)
+            {
+                _combatHandler.OnEnemyKilled();
+            }
+        }
 
         // =====================================================================
         //  生命周期
@@ -70,7 +113,24 @@ namespace EscapeTheTower.Entity.Hero
             }
 
             _input = GetComponent<HeroInputHandler>();
-            _rb = GetComponent<Rigidbody2D>();
+
+            // 格子移动组件（自动添加）
+            _gridMovement = GetComponent<GridMovement>();
+            if (_gridMovement == null)
+            {
+                _gridMovement = gameObject.AddComponent<GridMovement>();
+            }
+            _gridMovement.OnArrivedAtTile += OnArrivedAtTile;
+
+            // 初始化子组件（自动添加缺失的组件）
+            _skillHandler = GetComponent<HeroSkillHandler>();
+            if (_skillHandler == null) _skillHandler = gameObject.AddComponent<HeroSkillHandler>();
+
+            _inventory = GetComponent<HeroInventory>();
+            if (_inventory == null) _inventory = gameObject.AddComponent<HeroInventory>();
+
+            _combatHandler = GetComponent<HeroCombatHandler>();
+            if (_combatHandler == null) _combatHandler = gameObject.AddComponent<HeroCombatHandler>();
 
             Faction = Faction.Player;
         }
@@ -78,7 +138,56 @@ namespace EscapeTheTower.Entity.Hero
         protected override void Start()
         {
             base.Start();
+            EnsureVisualRepresentation();
             InitializeHero();
+            EnsureAlive();
+        }
+
+        /// <summary>
+        /// 确保有可见的视觉表现（无美术素材时自动生成白色方块）
+        /// </summary>
+        private void EnsureVisualRepresentation()
+        {
+            var sr = GetComponent<SpriteRenderer>();
+            if (sr == null)
+            {
+                sr = gameObject.AddComponent<SpriteRenderer>();
+            }
+
+            if (sr.sprite == null)
+            {
+                Texture2D tex = new Texture2D(4, 4);
+                Color[] px = new Color[16];
+                for (int i = 0; i < 16; i++) px[i] = Color.white;
+                tex.SetPixels(px);
+                tex.Apply();
+                sr.sprite = Sprite.Create(tex, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4f);
+                sr.color = new Color(0.3f, 0.7f, 1.0f);
+            }
+        }
+
+        /// <summary>
+        /// 确保英雄在初始化后处于存活状态（防止 SO 数据未填导致 IsAlive=false）
+        /// </summary>
+        private void EnsureAlive()
+        {
+            if (CurrentStats.Get(StatType.HP) <= 0f)
+            {
+                CurrentStats.Set(StatType.HP, 100f);
+                CurrentStats.Set(StatType.MaxHP, 100f);
+                Debug.LogWarning("[HeroController] HP为0，已强制设为100。请检查HeroClassData_SO配置。");
+            }
+
+            if (CurrentStats.Get(StatType.MaxHP) <= 0f)
+            {
+                CurrentStats.Set(StatType.MaxHP, 100f);
+                Debug.LogWarning("[HeroController] MaxHP为0，已强制设为100。请检查HeroClassData_SO配置。");
+            }
+
+            // 确保实际 HP 不超过 MaxHP
+            float hp = CurrentStats.Get(StatType.HP);
+            float maxHp = CurrentStats.Get(StatType.MaxHP);
+            if (hp > maxHp) CurrentStats.Set(StatType.HP, maxHp);
         }
 
         private void Update()
@@ -86,9 +195,8 @@ namespace EscapeTheTower.Entity.Hero
             if (!IsAlive) return;
 
             UpdateMovement();
-            UpdateSkillCooldowns();
-            UpdatePassives();
-            HandleSkillInput();
+            _skillHandler.Tick();
+            _combatHandler.Tick();
         }
 
         // =====================================================================
@@ -97,304 +205,41 @@ namespace EscapeTheTower.Entity.Hero
 
         private void InitializeHero()
         {
-            CurrentLevel = heroClassData != null ? heroClassData.startingLevel : 1;
-            CurrentExp = heroClassData != null ? heroClassData.startingExp : 0;
-            ExpToNextLevel = DamageCalculator.GetExpRequiredForLevel(CurrentLevel);
+            // 初始化子组件（传递依赖引用）
+            _skillHandler.Initialize(this, _input);
+            _inventory.Initialize(this);
+            _combatHandler.Initialize(this, _skillHandler, _gridMovement);
 
-            // 订阅事件
-            EventManager.Subscribe<OnEntityKillEvent>(OnEnemyKilled);
-            EventManager.Subscribe<OnExpGainedEvent>(OnExpGained);
-            EventManager.Subscribe<OnGoldGainedEvent>(OnGoldGained);
+            // 对齐到格子
+            _gridMovement.SnapToGrid();
 
-            Debug.Log($"[HeroController] 英雄 {heroClassData?.entityName ?? "未知"} 初始化完成。" +
-                      $" Lv.{CurrentLevel} EXP:{CurrentExp}/{ExpToNextLevel}");
+            Debug.Log($"[HeroController] 英雄初始化完毕 | " +
+                      $"职业={heroClassData?.entityName ?? "未配置"} | " +
+                      $"HP={CurrentStats.Get(StatType.HP):F0}/{CurrentStats.Get(StatType.MaxHP):F0}");
         }
 
         // =====================================================================
-        //  移动
+        //  格子移动
+        //  来源：DesignDocs/03_Combat_System.md §1.1.1
         // =====================================================================
 
         private void UpdateMovement()
         {
-            float moveSpeed = CurrentStats.Get(StatType.MoveSpeed) * 3f; // 基准 1.0 → 3 单位/秒
+            // 移动速度：baseMoveSpeed(1.0) × 8 = 8格/秒 → 单格约125ms
+            float speed = Mathf.Max(1f, CurrentStats.Get(StatType.MoveSpeed) * 8f);
+            if (!Mathf.Approximately(speed, _lastMoveSpeed))
+            {
+                _lastMoveSpeed = speed;
+                _gridMovement.SetMoveSpeed(speed);
+                // 回弹需要比正常移动更快更利落（12f → 约170ms 完成往返）
+                _gridMovement.SetBumpSpeed(12f);
+            }
 
             if (_input.IsMoving)
             {
-                // WASD 移动优先，取消点击移动
-                _isClickMoving = false;
-                Vector2 velocity = _input.MoveInput * moveSpeed;
-
-                if (_rb != null)
-                {
-                    _rb.linearVelocity = velocity;
-                }
-                else
-                {
-                    transform.Translate(velocity * Time.deltaTime);
-                }
+                // 按键栈已输出四方向 Vector2Int，直接传递
+                _gridMovement.SetDirection(_input.MoveDirection);
             }
-            else if (_input.RightClickPressed)
-            {
-                // 鼠标右键点击地板移动
-                _clickMoveTarget = _input.MouseWorldPosition;
-                _clickMoveTarget.z = 0f;
-                _isClickMoving = true;
-            }
-            else if (_isClickMoving)
-            {
-                // 执行点击移动
-                Vector3 direction = (_clickMoveTarget - transform.position);
-                if (direction.magnitude < 0.1f)
-                {
-                    _isClickMoving = false;
-                    if (_rb != null) _rb.linearVelocity = Vector2.zero;
-                }
-                else
-                {
-                    Vector2 velocity = direction.normalized * moveSpeed;
-                    if (_rb != null)
-                    {
-                        _rb.linearVelocity = velocity;
-                    }
-                    else
-                    {
-                        transform.Translate(velocity * Time.deltaTime);
-                    }
-                }
-            }
-            else
-            {
-                // 静止
-                if (_rb != null) _rb.linearVelocity = Vector2.zero;
-            }
-        }
-
-        // =====================================================================
-        //  技能冷却
-        // =====================================================================
-
-        private void UpdateSkillCooldowns()
-        {
-            if (_skill1CooldownTimer > 0f) _skill1CooldownTimer -= Time.deltaTime;
-            if (_skill2CooldownTimer > 0f) _skill2CooldownTimer -= Time.deltaTime;
-            if (_ultimateCooldownTimer > 0f) _ultimateCooldownTimer -= Time.deltaTime;
-            if (_evasionCooldownTimer > 0f) _evasionCooldownTimer -= Time.deltaTime;
-        }
-
-        // =====================================================================
-        //  技能输入处理
-        // =====================================================================
-
-        private void HandleSkillInput()
-        {
-            // 闪避（燕返）
-            if (_input.DodgePressed)
-            {
-                TryUseEvasion();
-            }
-
-            // 技能1（疾风突刺）
-            if (_input.Skill1Pressed)
-            {
-                TryUseSkill1();
-            }
-
-            // 技能2（旋风斩）
-            if (_input.Skill2Pressed)
-            {
-                TryUseSkill2();
-            }
-
-            // 大招（极刃风暴）
-            if (_input.UltimatePressed)
-            {
-                TryUseUltimate();
-            }
-        }
-
-        // =====================================================================
-        //  流浪剑客技能实装
-        //  来源：GameData_Blueprints/05_Hero_Classes_And_Skills.md
-        // =====================================================================
-
-        /// <summary>
-        /// 专属闪避：燕返
-        /// CD 1.5秒，无消耗，无敌帧 0.3秒
-        /// 被动二「绝境求生」：HP < 30% 时无敌帧延长至 0.5秒
-        /// </summary>
-        private void TryUseEvasion()
-        {
-            if (_evasionCooldownTimer > 0f) return;
-
-            float cd = heroClassData != null ? heroClassData.evasionCooldown : 1.5f;
-            _evasionCooldownTimer = cd;
-
-            // 向前翻滚位移
-            Vector2 dir = _input.IsMoving ? _input.MoveInput : Vector2.right;
-            float rollDistance = 2.5f;
-            Vector3 targetPos = transform.position + (Vector3)(dir * rollDistance);
-
-            // 简化翻滚（直接位移，后续可替换为动画曲线）
-            transform.position = targetPos;
-
-            // 无敌帧持续时间（被动二检测）
-            float hpRatio = CurrentStats.Get(StatType.HP) / Mathf.Max(1f, CurrentStats.Get(StatType.MaxHP));
-            float invDuration = hpRatio < 0.30f ? 0.5f : 0.3f;
-
-            Debug.Log($"[剑客] 燕返！无敌帧 {invDuration}s " +
-                      (hpRatio < 0.30f ? "【绝境求生触发：延长至0.5s】" : ""));
-        }
-
-        /// <summary>
-        /// 技能一：疾风突刺
-        /// CD 8秒，无消耗，向摇杆方向突刺，造成 (40 + 1.5*ATK) 物伤
-        /// 每命中一个目标恢复 10 点法力
-        /// </summary>
-        private void TryUseSkill1()
-        {
-            if (_skill1CooldownTimer > 0f)
-            {
-                Debug.Log("[剑客] 疾风突刺冷却中...");
-                return;
-            }
-
-            _skill1CooldownTimer = 8.0f;
-
-            float atk = CurrentStats.Get(StatType.ATK);
-            float damage = 40f + 1.5f * atk;
-
-            // 向摇杆方向突刺位移
-            Vector2 dir = _input.IsMoving ? _input.MoveInput : Vector2.right;
-            float dashDistance = 3.0f;
-            transform.position += (Vector3)(dir * dashDistance);
-
-            // TODO: 碰撞检测路径上的敌人并造成伤害，每命中一个回复 10 MP
-            Debug.Log($"[剑客] 疾风突刺！伤害={damage:F1} 方向={dir}");
-        }
-
-        /// <summary>
-        /// 技能二：旋风斩
-        /// CD 12秒，消耗 30 MP，原地AOE 2秒，每0.5秒造成 (15+0.6*ATK) 物伤
-        /// 移速降低30%但免疫击退打断
-        /// </summary>
-        private void TryUseSkill2()
-        {
-            if (_skill2CooldownTimer > 0f)
-            {
-                Debug.Log("[剑客] 旋风斩冷却中...");
-                return;
-            }
-
-            if (!ConsumeMana(30f))
-            {
-                Debug.Log("[剑客] 旋风斩法力不足！");
-                return;
-            }
-
-            _skill2CooldownTimer = 12.0f;
-
-            float atk = CurrentStats.Get(StatType.ATK);
-            float tickDamage = 15f + 0.6f * atk;
-
-            // TODO: 启动协程，2秒内每0.5秒对周围敌人造成伤害，期间移速-30%但免疫控制
-            Debug.Log($"[剑客] 旋风斩！每跳伤害={tickDamage:F1} 持续2秒");
-        }
-
-        /// <summary>
-        /// 终极必杀技：极刃风暴
-        /// CD 45秒（实际由怒气驱动），消耗满怒气
-        /// 8段打击，每段 (30+0.8*ATK)，绝对霸体免疫伤害，15%物理吸血
-        /// </summary>
-        private void TryUseUltimate()
-        {
-            if (_ultimateCooldownTimer > 0f)
-            {
-                Debug.Log("[剑客] 极刃风暴防连点冷却中...");
-                return;
-            }
-
-            if (!IsRageFull())
-            {
-                Debug.Log($"[剑客] 极刃风暴怒气不足！当前怒气: " +
-                          $"{CurrentStats.Get(StatType.Rage):F0}/{CurrentStats.Get(StatType.MaxRage):F0}");
-                return;
-            }
-
-            // 消耗全部怒气
-            ConsumeAllRage();
-            _ultimateCooldownTimer = 1.0f; // 防连点安全间隔
-
-            float atk = CurrentStats.Get(StatType.ATK);
-            float hitDamage = 30f + 0.8f * atk;
-            int hitCount = 8;
-            float lifeSteal = 0.15f;
-
-            // TODO: 启动协程，8段打击，期间霸体免疫伤害，每段附带15%物理吸血
-            Debug.Log($"[剑客] 极刃风暴！{hitCount}段 x {hitDamage:F1}伤害 吸血{lifeSteal:P0}");
-        }
-
-        // =====================================================================
-        //  被动技能
-        //  来源：GameData_Blueprints/05_Hero_Classes_And_Skills.md
-        // =====================================================================
-
-        /// <summary>
-        /// 更新被动技能逻辑
-        /// </summary>
-        private void UpdatePassives()
-        {
-            UpdatePassive1_SwordPath();
-            // 被动二（绝境求生）在 TryUseEvasion 和 TakeDamage 中内联检测
-        }
-
-        /// <summary>
-        /// 被动一：剑气纵横
-        /// 普攻命中恢复 5 MP，叠加剑路（最高10层），每层1%攻速移速
-        /// 满层普攻发射穿透剑气(100%*ATK)
-        /// 脱战3秒后剑路衰减
-        /// </summary>
-        private void UpdatePassive1_SwordPath()
-        {
-            if (_swordPathStacks > 0 && !_isInBattle)
-            {
-                _swordPathDecayTimer -= Time.deltaTime;
-                if (_swordPathDecayTimer <= 0f)
-                {
-                    _swordPathStacks = Mathf.Max(0, _swordPathStacks - 1);
-                    _swordPathDecayTimer = 0.5f; // 每 0.5 秒衰减一层
-                }
-            }
-        }
-
-        /// <summary>
-        /// 普攻命中时调用（由战斗系统外部触发）
-        /// 处理被动一的回蓝和剑路叠层
-        /// </summary>
-        public void OnNormalAttackHit()
-        {
-            // 被动一：剑气纵横 —— 普攻回蓝
-            RestoreMana(5f);
-
-            // 叠加剑路
-            if (_swordPathStacks < SWORD_PATH_MAX_STACKS)
-            {
-                _swordPathStacks++;
-            }
-            _swordPathDecayTimer = SWORD_PATH_DECAY_DELAY;
-
-            // 满层触发穿透剑气
-            if (_swordPathStacks >= SWORD_PATH_MAX_STACKS)
-            {
-                float atk = CurrentStats.Get(StatType.ATK);
-                float swordBeamDamage = atk * 1.0f; // 100% * ATK
-
-                // TODO: 生成穿透剑气投射物，对路径敌人造成物理伤害
-                Debug.Log($"[剑客] 剑路满层！发射穿透剑气 伤害={swordBeamDamage:F1}");
-            }
-
-            // 普攻造成伤害积攒怒气
-            float rageGain = 5f; // 普攻每次积攒固定怒气
-            AddRage(rageGain);
         }
 
         // =====================================================================
@@ -420,67 +265,59 @@ namespace EscapeTheTower.Entity.Hero
         }
 
         // =====================================================================
-        //  经验与升级
+        //  拾取物交互（踩到格子时触发）
         // =====================================================================
 
-        private void OnExpGained(OnExpGainedEvent evt)
+        private void OnArrivedAtTile(Vector2Int tilePos)
         {
-            CurrentExp += evt.Amount;
-
-            // 检查升级
-            while (CurrentExp >= ExpToNextLevel)
+            // === 拾取物交互 ===
+            var pickupMgr = EscapeTheTower.Map.PickupManager.Instance;
+            if (pickupMgr != null)
             {
-                CurrentExp -= ExpToNextLevel;
-                LevelUp();
+                var item = pickupMgr.GetItemAt(tilePos);
+                if (item != null)
+                {
+                    // 根据类型处理效果
+                    switch (item.Type)
+                    {
+                        case PickupType.HealthPotion:
+                            Heal(item.Value);
+                            break;
+                        case PickupType.ManaPotion:
+                            RestoreMana(item.Value);
+                            break;
+                        case PickupType.KeyBronze:
+                            AddKey(DoorTier.Bronze);
+                            break;
+                        case PickupType.KeySilver:
+                            AddKey(DoorTier.Silver);
+                            break;
+                        case PickupType.KeyGold:
+                            AddKey(DoorTier.Gold);
+                            break;
+                        case PickupType.GoldPile:
+                            Gold += item.Value;
+                            Debug.Log($"[拾取] 金币堆 +{item.Value}，总计={Gold}");
+                            break;
+                    }
+
+                    item.OnPickedUp(EntityID);
+                }
             }
-        }
 
-        private void LevelUp()
-        {
-            CurrentLevel++;
-            ExpToNextLevel = DamageCalculator.GetExpRequiredForLevel(CurrentLevel);
-
-            // 升级奖励：全基础属性 +1
-            // 通过符文层级实现，创建一个升级加成 StatBlock
-            var levelUpBonus = new StatBlock();
-            levelUpBonus.Set(StatType.MaxHP, GameConstants.LEVEL_UP_STAT_BONUS);
-            levelUpBonus.Set(StatType.ATK, GameConstants.LEVEL_UP_STAT_BONUS);
-            levelUpBonus.Set(StatType.MATK, GameConstants.LEVEL_UP_STAT_BONUS);
-            levelUpBonus.Set(StatType.DEF, GameConstants.LEVEL_UP_STAT_BONUS);
-            levelUpBonus.Set(StatType.MDEF, GameConstants.LEVEL_UP_STAT_BONUS);
-            AddRuneStat(levelUpBonus); // 走管线层级4叠加
-
-            // 广播升级事件（触发机制符文三选一 UI）
-            EventManager.Publish(new OnPlayerLevelUpEvent
+            // === 楼梯交互（踩到解锁楼梯 → 切换楼层） ===
+            var transitionMgr = EscapeTheTower.Map.FloorTransitionManager.Instance;
+            if (transitionMgr != null && transitionMgr.CurrentFloorGrid != null)
             {
-                Meta = new EventMeta(EntityID),
-                NewLevel = CurrentLevel,
-            });
-
-            Debug.Log($"[HeroController] 升级！Lv.{CurrentLevel} 全属性+1" +
-                      $" 下一级需要 {ExpToNextLevel} EXP");
-        }
-
-        // =====================================================================
-        //  击杀与金币
-        // =====================================================================
-
-        private void OnEnemyKilled(OnEntityKillEvent evt)
-        {
-            if (evt.KillerEntityID != EntityID) return;
-            _isInBattle = false; // 击杀后暂时视为脱战（后续由战斗状态机管理）
-        }
-
-        private void OnGoldGained(OnGoldGainedEvent evt)
-        {
-            Gold += evt.Amount;
-        }
-
-        /// <summary>进入战斗标记</summary>
-        public void EnterBattle()
-        {
-            _isInBattle = true;
-            _swordPathDecayTimer = SWORD_PATH_DECAY_DELAY;
+                var grid = transitionMgr.CurrentFloorGrid;
+                if (grid.InBounds(tilePos.x, tilePos.y) &&
+                    grid.Tiles[tilePos.x, tilePos.y] == TileType.StairsDown &&
+                    !grid.StairsLocked)
+                {
+                    Debug.Log($"[楼梯] 踩到解锁楼梯！准备切换楼层...");
+                    transitionMgr.TransitionToNextFloor();
+                }
+            }
         }
 
         // =====================================================================
@@ -490,17 +327,36 @@ namespace EscapeTheTower.Entity.Hero
         protected override void OnDeath(int killerID)
         {
             Debug.Log($"[HeroController] 英雄 {heroClassData?.entityName ?? "未知"} 阵亡！");
-            // TODO: 弹出死亡 UI / 结算界面
-            // 英雄不走 CommandBuffer 销毁，而是禁用控制
-            _input.enabled = false;
-            if (_rb != null) _rb.linearVelocity = Vector2.zero;
 
-            // 仍然广播死亡/击杀事件
+            // 禁用输入和移动
+            _input.enabled = false;
+            if (_gridMovement != null)
+            {
+                _gridMovement.enabled = false;
+            }
+
+            // 禁用子组件
+            if (_skillHandler != null) _skillHandler.enabled = false;
+            if (_combatHandler != null) _combatHandler.enabled = false;
+
+            // 禁用自身 Update（停止一切行为）
+            enabled = false;
+
+            // 广播死亡事件
             EventManager.Publish(new OnEntityDeathEvent
             {
                 Meta = new EventMeta(EntityID),
                 EntityID = EntityID,
             });
+
+            // 弹出死亡结算界面
+            var deathScreen = FindAnyObjectByType<EscapeTheTower.UI.DeathScreen>();
+            if (deathScreen == null)
+            {
+                var deathObj = new GameObject("DeathScreen");
+                deathScreen = deathObj.AddComponent<EscapeTheTower.UI.DeathScreen>();
+            }
+            deathScreen.Show(CurrentLevel, Gold, Time.timeSinceLevelLoad);
         }
 
         // =====================================================================
@@ -509,9 +365,10 @@ namespace EscapeTheTower.Entity.Hero
 
         private void OnDestroy()
         {
-            EventManager.Unsubscribe<OnEntityKillEvent>(OnEnemyKilled);
-            EventManager.Unsubscribe<OnExpGainedEvent>(OnExpGained);
-            EventManager.Unsubscribe<OnGoldGainedEvent>(OnGoldGained);
+            if (_gridMovement != null)
+            {
+                _gridMovement.OnArrivedAtTile -= OnArrivedAtTile;
+            }
         }
     }
 }

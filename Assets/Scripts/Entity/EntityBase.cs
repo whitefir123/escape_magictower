@@ -34,7 +34,7 @@ namespace EscapeTheTower.Entity
         public bool IsAlive => CurrentStats.Get(StatType.HP) > 0f;
 
         /// <summary>当前最终属性表（经过六层管线全量重算后的镜像）</summary>
-        public StatBlock CurrentStats { get; private set; }
+        public StatBlock CurrentStats { get; protected set; }
 
         /// <summary>实体数据 SO 的公共访问器</summary>
         public EntityData_SO EntityData => entityData;

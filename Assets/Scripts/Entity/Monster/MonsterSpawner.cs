@@ -73,7 +73,7 @@ namespace EscapeTheTower.Entity.Monster
                 MonsterData_SO data = monsterPool[Random.Range(0, monsterPool.Length)];
 
                 // 精英突变检定
-                bool isElite = Random.value < GameConstants.ELITE_MUTATION_CHANCE;
+                bool isElite = Random.value < GameConstants.ELITE_BASE_MUTATION_CHANCE;
                 float eliteMult = isElite
                     ? Random.Range(GameConstants.ELITE_STAT_MULTIPLIER_MIN, GameConstants.ELITE_STAT_MULTIPLIER_MAX)
                     : 1f;
@@ -98,7 +98,8 @@ namespace EscapeTheTower.Entity.Monster
             float distanceFactor = 1.0f;
 
             MonsterData_SO bossData = Floor1MonsterRegistry.CreateFallenHero();
-            Vector3 spawnPos = new Vector3(room.GridPosition.x * 5f, room.GridPosition.y * 5f, 0f);
+            // RoomNode.GridPosition 已是瓦片坐标（由 RoomData.Center 映射）
+            Vector3 spawnPos = new Vector3(room.GridPosition.x, room.GridPosition.y, 0f);
 
             GameObject bossObj;
             if (bossPrefab != null)
@@ -190,8 +191,9 @@ namespace EscapeTheTower.Entity.Monster
         /// </summary>
         private Vector3 GetSpawnPosition(Vector2Int roomGridPos, int index, int total)
         {
-            float roomCenterX = roomGridPos.x * 5f;
-            float roomCenterY = roomGridPos.y * 5f;
+            // RoomNode.GridPosition 已是瓦片坐标（由 RoomData.Center 映射）
+            float roomCenterX = roomGridPos.x;
+            float roomCenterY = roomGridPos.y;
 
             // 环形均匀分布
             float angle = (2f * Mathf.PI / total) * index;

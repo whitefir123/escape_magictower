@@ -149,6 +149,80 @@ namespace EscapeTheTower.Core
         public ElementalReactionType ReactionType;
     }
 
+    /// <summary>符文三选一候选就绪事件（通知 UI 弹窗）</summary>
+    public struct OnRuneDraftReadyEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>触发途径（KillDrop=属性符文, LevelUp=机制符文）</summary>
+        public RuneAcquisitionType AcquisitionType;
+    }
+
+    /// <summary>符文三选一结束事件（通知系统恢复游戏）</summary>
+    public struct OnRuneDraftCompleteEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+    }
+
+    /// <summary>门被打开事件</summary>
+    public struct OnDoorOpenedEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>门等级</summary>
+        public DoorTier DoorTier;
+        /// <summary>门所在格子坐标</summary>
+        public Vector2Int Position;
+    }
+
+    /// <summary>拾取物被拾取事件</summary>
+    public struct OnItemPickedUpEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>物品类型</summary>
+        public PickupType ItemType;
+        /// <summary>物品品质（消耗品用）</summary>
+        public QualityTier Quality;
+        /// <summary>拾取位置</summary>
+        public Vector2Int Position;
+        /// <summary>效果数值（回复量/金币数等）</summary>
+        public int Value;
+    }
+
+    /// <summary>宝箱被打开事件</summary>
+    public struct OnChestOpenedEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>所属房间 ID（0 = 路途宝箱）</summary>
+        public int RoomID;
+        /// <summary>宝箱位置</summary>
+        public Vector2Int Position;
+    }
+
+    /// <summary>房间清除事件（所有怪物被消灭后广播）</summary>
+    public struct OnRoomClearedEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>被清除的房间 ID</summary>
+        public int RoomID;
+    }
+
+    /// <summary>楼层切换事件（切层完成后广播）</summary>
+    public struct OnFloorTransitionEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>旧楼层编号（首层为 0）</summary>
+        public int OldFloorLevel;
+        /// <summary>新楼层编号</summary>
+        public int NewFloorLevel;
+    }
+
+    /// <summary>怪物掉落钥匙事件（击杀即时获得）</summary>
+    public struct OnKeyDroppedEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>掉落的钥匙类型</summary>
+        public DoorTier KeyTier;
+    }
+
     // =========================================================================
     //  EventManager 核心实现
     // =========================================================================
@@ -167,6 +241,16 @@ namespace EscapeTheTower.Core
 
         // 当前正在处理的事件 Generation 深度（用于熔断检测）
         private static int _currentGeneration = 0;
+
+        /// <summary>
+        /// 场景加载前清空静态状态，防止 Domain Reload 关闭时残留已销毁对象的回调
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            _eventTable.Clear();
+            _currentGeneration = 0;
+        }
 
         /// <summary>
         /// 订阅指定类型的事件

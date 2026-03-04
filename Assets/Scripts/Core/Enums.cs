@@ -192,6 +192,56 @@ namespace EscapeTheTower
     }
 
     /// <summary>
+    /// 地图格子类型 —— 程序化生成的每个格子的身份
+    /// </summary>
+    public enum TileType
+    {
+        Wall,           // 墙壁（不可通行）
+        Floor,          // 走廊地面
+        RoomFloor,      // 房间内地面
+        DoorBronze,     // 铜门
+        DoorSilver,     // 银门
+        DoorGold,       // 金门
+        Spawn,          // 玩家出生点
+        StairsDown,     // 下行楼梯
+    }
+
+    /// <summary>
+    /// 门等级 —— 对应三种钥匙
+    /// </summary>
+    public enum DoorTier
+    {
+        None,       // 无门（开放入口）
+        Bronze,     // 铜门（铜钥匙）
+        Silver,     // 银门（银钥匙）
+        Gold,       // 金门（金钥匙）
+    }
+
+    /// <summary>
+    /// 拾取物类型 —— 走廊掉落物和消耗品
+    /// </summary>
+    public enum PickupType
+    {
+        HealthPotion,   // 血瓶（有品质分级）
+        ManaPotion,     // 法力瓶（有品质分级）
+        KeyBronze,      // 铜钥匙
+        KeySilver,      // 银钥匙
+        KeyGold,        // 金钥匙
+        GoldPile,       // 金币堆
+    }
+
+    /// <summary>
+    /// 宝箱状态
+    /// </summary>
+    public enum ChestState
+    {
+        Locked,     // 锁定（需清怪解锁）
+        Unlocked,   // 已解锁（可开启）
+        Opened,     // 已开启
+    }
+
+
+    /// <summary>
     /// 装备槽位枚举 —— 严格 6 大槽位
     /// </summary>
     public enum EquipmentSlot

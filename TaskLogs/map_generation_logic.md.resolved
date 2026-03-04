@@ -1,0 +1,483 @@
+# Magic Tower Wars — 地图生成逻辑深度解析
+
+> 本文档面向 **Unity 项目的 AI 开发者**，系统性地还原网页端 [MapSystem.js](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js) 中的地图程序生成全流程。
+> 所有描述均严格对应源码逻辑，可直接作为 Unity 端实现的权威参考。
+
+---
+
+## 一、基础常量与数据结构
+
+### 1.1 地图尺寸与格子类型
+
+```
+MAP_WIDTH  = 120   // 地图宽度（格子数）
+MAP_HEIGHT = 120   // 地图高度（格子数）
+TILE_SIZE  = 32    // 每个格子的像素尺寸（仅网页端渲染用）
+```
+
+**Tile 枚举（5 种）：**
+
+| 值 | 常量名       | 含义        | 可通行 |
+|----|------------|-----------|------|
+| 0  | FLOOR      | 地板        | ✅    |
+| 1  | WALL       | 墙壁        | ❌    |
+| 2  | DOOR       | 门（需钥匙开启） | ❌*   |
+| 3  | STAIRS_DOWN | 下行楼梯（出口）  | ✅    |
+| 4  | STAIRS_UP  | 上行楼梯（入口）  | ✅    |
+
+> *DOOR 在逻辑上不可通行，角色到达时消耗钥匙后转变为 FLOOR。
+
+### 1.2 核心数据结构
+
+**Room（房间）：**
+```
+{
+  x, y,        // 左上角坐标（格子单位）
+  w, h,        // 宽度、高度（格子数）
+  cx, cy,      // 中心坐标 = (x + w/2, y + h/2) 取整
+  isSecure,    // 是否为安全房间（宝箱房/Boss房），安全房间用 DOOR 封锁
+  isBoss,      // 是否为 Boss 房间
+  isStart      // 是否为起始房间
+}
+```
+
+**Grid（二维数组）：**
+```
+grid[y][x] → TILE 枚举值
+```
+> ⚠️ 注意坐标约定：**行优先 (row, col)**，即 `grid[y][x]`。
+
+---
+
+## 二、地图生成总流程（[generateLevel](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#73-763)）
+
+入口方法签名：[generateLevel(floor, ascensionLevel = 1, rng = null)](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#73-763)
+
+- `floor`：当前楼层编号（从 1 开始）
+- `ascensionLevel`：噩梦层级（1-25），影响怪物密度、陷阱密度等
+- `rng`：可选的种子随机数生成器（每日挑战模式使用，保证确定性生成）
+
+### 生成流程概览（严格执行顺序）
+
+```mermaid
+flowchart TD
+    A[1. 初始化网格: 全部填充为 WALL] --> B[2. 随机放置房间]
+    B --> C[3. 递归迷宫雕刻: 填充房间之外的空间]
+    C --> D[4. 连接房间: 普通房间开口/安全房间设门]
+    D --> E[5. 放置楼梯: 起点=STAIRS_UP, 终点=STAIRS_DOWN]
+    E --> F[6. ensureMultiplePaths: 保证至少3条独立路径]
+    F --> G[7. 放置NPC: 商人/赌徒/铁砧]
+    G --> H[8. 放置怪物: 房间内+走廊]
+    H --> I[9. 放置钥匙]
+    I --> J[10. 放置可破坏物体: 木箱/木桶]
+    J --> K[11. 放置陷阱]
+    K --> L[12. 放置神殿: 死胡同处]
+    L --> M[13. 放置诅咒祭坛: 2格宽]
+    M --> N[14. 生成迷雾粒子]
+```
+
+---
+
+## 三、步骤详解
+
+### 步骤 1：初始化
+
+```
+清空所有列表: monsters[], items[], objects[], npcs[], fogParticles[]
+初始化 grid[120][120]，全部填充为 WALL (1)
+初始化 explored[120][120] = false （战争迷雾系统）
+初始化 visible[120][120] = false
+```
+
+### 步骤 2：随机放置房间
+
+**算法：暴力随机 + 碰撞检测**
+
+```
+rooms = []
+最多尝试 100 次，目标生成 8 个房间:
+  w = randomInt(5, 8)   // 房间宽度
+  h = randomInt(5, 8)   // 房间高度
+  x = randomInt(1, MAP_WIDTH - w - 2)   // 左上角X（留边距1）
+  y = randomInt(1, MAP_HEIGHT - h - 2)  // 左上角Y（留边距1）
+
+  碰撞检测: 新房间与所有已有房间之间必须有≥1格间隙
+  判定公式: x < r.x + r.w + 1 && x + w + 1 > r.x && y < r.y + r.h + 1 && y + h + 1 > r.y
+  （任何已有房间 r 满足此条件 → 碰撞，跳过）
+
+  通过检测 → 将房间区域内所有格子设为 FLOOR
+```
+
+**房间角色分配：**
+- `rooms[0]` → 起始房间（`isStart = true`）
+- `rooms[last]` → Boss 房间（`isSecure = true, isBoss = true`）
+- 从剩余房间中随机选取 2-3 个作为宝箱房（`isSecure = true`）
+
+> ⚠️ 关键点：房间数量上限为 8，下限为 1。若 100 次尝试后一个房间都没生成，直接 return。
+
+### 步骤 3：递归迷宫雕刻（Recursive Backtracking）
+
+**目的：在房间之外的墙壁区域中，生成随机迷宫走廊。**
+
+```
+遍历奇数坐标 (x从1开始, 步长2; y从1开始, 步长2):
+  条件: grid[y][x] == WALL 且 周围4个邻格都不是 FLOOR
+  满足 → 调用 carve(x, y)
+```
+
+**[carve(x, y)](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#764-783) 递归算法：**
+```
+将 grid[y][x] 设为 FLOOR
+随机打乱四个方向: [上(-2), 下(+2), 左(-2), 右(+2)]
+对每个方向 (dx, dy):
+  目标格 (nx, ny) = (x + dx, y + dy)
+  若 nx, ny 在边界内 且 grid[ny][nx] == WALL:
+    打通中间墙: grid[y + dy/2][x + dx/2] = FLOOR
+    递归: carve(nx, ny)
+```
+
+> 这是一个标准的 **递归回溯迷宫生成算法**，步长为 2 保证了走廊宽度为 1 格。
+> 
+> ⚠️ 重要：若提供了 RNG 种子，方向的打乱必须使用该 RNG（以保证每日挑战的确定性）。
+
+### 步骤 4：连接房间（Connector System）
+
+对每个房间执行连接：
+
+**安全房间（`isSecure = true`，即宝箱房/Boss房）：**
+```
+寻找连接候选: 房间边缘的墙壁格，其外侧第2格为 FLOOR
+选取 1 个候选 → 设为 DOOR (2)
+若找不到候选 → 强制在房间边缘中点打开连接，设为 DOOR
+```
+
+**普通房间：**
+```
+寻找连接候选（同上）
+随机选取 1-3 个候选 → 设为 FLOOR (0)
+若找不到候选 → 强制打开 1 个连接，设为 FLOOR
+```
+
+**连接候选判定 ([getRoomConnectorCandidates](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#47-59))：**
+```
+扫描房间四边:
+  上边: 对每个 x ∈ [room.x, room.x+w)，检查 (x, room.y-2) 是否为 FLOOR
+        是 → 候选坐标 (x, room.y-1)
+  下边: 对每个 x，检查 (x, room.y+h+1) 是否为 FLOOR
+  左边: 对每个 y，检查 (room.x-2, y) 是否为 FLOOR
+  右边: 对每个 y，检查 (room.x+w+1, y) 是否为 FLOOR
+```
+
+**强制连接 ([forceCreateConnector](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#60-72))：**
+```
+选择房间的四边中点作为候选（非边缘中点）
+随机选一个 → 打开墙壁 + 外侧格子也打开
+```
+
+### 步骤 5：放置楼梯
+
+```
+起始房间中心: grid[start.cy][start.cx] = STAIRS_UP (4)
+终点房间中心: grid[endRoom.cy][endRoom.cx] = STAIRS_DOWN (3)
+```
+
+### 步骤 6：多路径保证算法（[ensureMultiplePaths](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#975-1042)）
+
+**目标：确保从起点（STAIRS_UP）到终点（STAIRS_DOWN）至少有 3 条顶点不相交路径。**
+
+**算法分两阶段：**
+
+**阶段 A：通过增加房间连接口**
+```
+计算当前顶点不相交路径数 (BFS + 路径阻塞法)
+while 路径数 < 3 且 尝试次数 < 30:
+  遍历非安全房间，找到还有被 WALL 封堵的连接候选
+  打开该墙壁 → 重新计算路径数
+```
+
+**阶段 B：随机打开墙壁**
+```
+while 路径数 < 3 且 尝试次数 < 50:
+  收集所有满足"邻居中至少2个为FLOOR/DOOR"的WALL格子
+  随机选一个 → 设为 FLOOR
+  重新计算路径数
+```
+
+**顶点不相交路径计算 ([_countVertexDisjointPaths](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#958-974))：**
+```
+克隆 grid → tempGrid
+for i = 0 to maxCount-1:
+  用 BFS 在 tempGrid 上找 start→end 的最短路径
+  若找不到 → break
+  记录路径
+  将路径中间节点（排除起终点）在 tempGrid 中设为 WALL（阻塞）
+  继续寻找下一条路径
+返回找到的路径集合
+```
+
+> BFS 寻路支持 FLOOR、DOOR、STAIRS_DOWN、STAIRS_UP 作为可通行格子（WALL 不可通行）。
+
+### 步骤 7：放置 NPC
+
+**放置顺序和条件：**
+
+| NPC     | 出现条件                         | 放置约束                     |
+|---------|------------------------------|--------------------------|
+| 商人      | `Merchant.shouldAppear(floor, lastMerchantFloor)` | 不在起点，任意 FLOOR 格         |
+| 赌徒      | `Gambler.shouldAppear(floor, config)`（10% 概率，≥2层） | 不在起点，与已有 NPC 曼哈顿距离 ≥ 10 |
+| 铁砧（锻造台） | `floor % 3 === 0`                              | 不在起点，与已有 NPC 曼哈顿距离 ≥ 10，不与怪物/物品/对象重叠 |
+
+> 每个 NPC 放置都有 50 次最大尝试，找不到合适位置则强制放置在随机 FLOOR 格。
+
+### 步骤 8：怪物放置
+
+**怪物类型（9种普通 + 1种Boss）：**
+
+| 类型        | 中文名  | 最小刷新距离 | 强度等级 | 基础权重 |
+|-----------|------|--------|------|------|
+| SLIME     | 史莱姆  | 0      | 1    | 100  |
+| BAT       | 蝙蝠   | 15     | 2    | 90   |
+| VOID      | 虚空晶体 | 20     | 3    | 80   |
+| SKELETON  | 骷髅战士 | 15     | 4    | 60   |
+| SWAMP     | 沼泽居民 | 30     | 5    | 50   |
+| CLOCKWORK | 发条骑士 | 30     | 6    | 40   |
+| GHOST     | 幽灵   | 20     | 6    | 35   |
+| REAPER    | 死神收割者 | 30     | 7    | 25   |
+| GOLEM     | 岩浆巨人 | 30     | 8    | 15   |
+| BOSS      | 黑暗领主 | 50     | -    | -    |
+
+#### 8.1 同心圆刷新机制 (`minSpawnDistance`)
+
+以玩家出生点（`start.cx, start.cy`）为中心，使用 **曼哈顿距离** 判定：
+
+```
+distance = |x - start.cx| + |y - start.cy|
+允许刷新条件: distance >= monster.minSpawnDistance
+```
+
+> 这确保了低等级怪物（史莱姆）可以出现在任何位置，而高等级怪物（岩浆巨人）只能在远离起点的区域出现。
+
+#### 8.2 加权随机池（Weighted Pool）
+
+```
+创建扁平化加权池: 每种怪物按权重值重复对应次数放入数组
+例: SLIME 权重 100 → 数组中有 100 个 "SLIME" 元素
+
+高楼层调整（floor > 1 时）:
+  floorWeightMultiplier = max(1, (floor - 1) * 0.15)
+  REAPER 权重 = 25 + 25 * floorWeightMultiplier
+  GOLEM  权重 = 15 + 20 * floorWeightMultiplier
+  CLOCKWORK 权重 = 40 + 15 * floorWeightMultiplier
+  GHOST  权重 = 35 + 20 * floorWeightMultiplier
+```
+
+#### 8.3 房间内怪物生成
+
+```
+对每个非起始、非安全房间:
+  baseCount = max(3, floor(room.w * room.h / 8))
+  count = ceil(baseCount * monsterDensityMultiplier)  // 噩梦层级修饰符
+  
+  循环生成（最多 count*10 次尝试）:
+    随机选择房间内坐标 (mx, my)（边缘留1格）
+    检查: grid[my][mx] == FLOOR 且 该位置无怪物
+    
+    从加权池随机选取怪物类型（最多5次尝试）:
+      检查距离权重: distance >= minSpawnDistance → 接受
+      否则 → 重试
+    若5次都不满足 → 强制使用池中随机类型
+    
+    创建 Monster 实例
+    再次校验 isValidSpawnLocation() → 通过则加入 monsters[]
+```
+
+#### 8.4 走廊/空地怪物生成
+
+```
+遍历所有 (x, y) ∈ [1, width-2] × [1, height-2]:
+  跳过: 非FLOOR / 在任何房间内部 / 已有怪物 / 已有物品
+  
+  生成概率: 8%
+  通过概率检查 → 同房间内逻辑选择怪物类型
+  校验 isValidSpawnLocation() → 通过则加入
+```
+
+#### 8.5 Boss 生成
+
+```
+普通模式: 每层都生成 Boss（floor >= 1）
+无限模式: 每 10 层生成 Boss（floor % 10 === 0）
+
+Boss 放在终点房间中心上方一格: (endRoom.cx, endRoom.cy - 1)
+
+层域守卫（普通模式, floor < 9）:
+  HP = baseHp * (0.05 + floor * 0.1)    // 大幅削弱
+  ATK = baseAtk * (0.5 + floor * 0.06)
+  DEF = baseDef * (0.5 + floor * 0.06)
+```
+
+### 步骤 9：钥匙放置
+
+```
+收集所有 FLOOR 格且不在安全房间内的坐标 → eligible[]
+打乱 eligible
+放置钥匙数量 = 安全房间数量（即 DOOR 的数量）
+  在 eligible 中按序放置 ITEM_KEY_BRONZE
+
+兜底检查: 若 items 中没有任何 KEY 类型物品
+  → 在起点右侧 (start.cx+1, start.cy) 放一把
+```
+
+### 步骤 10：可破坏物体
+
+```
+数量: randomInt(5, 10)
+最多 count*10 次尝试:
+  随机坐标 (dx, dy)
+  检查: FLOOR / 无怪物 / 无物品 / 无对象 / 非起点终点
+  类型: 50% 木箱 (OBJ_CRATE), 50% 木桶 (OBJ_BARREL)
+  HP = 1（一击即破）
+```
+
+### 步骤 11：陷阱放置
+
+```
+trapChance = min(0.25, 0.05 + ascConfig.trapDensity * 0.05)
+trapDamage = 10 * (1 + ascConfig.trapDamageMult)
+
+遍历所有 (x, y):
+  跳过: 非FLOOR / 有怪物 / 有物品 / 有对象 / 起点终点
+  random() < trapChance → 放置陷阱
+  
+陷阱属性:
+  type: 'OBJ_TRAP'
+  triggered: false  // 初始未触发
+  triggerCount: 0
+  resetTimer: 0
+```
+
+> ⚠️ 生成顺序很重要：**可破坏物体先于陷阱生成**，陷阱生成时通过 `objects.some()` 检查会自动跳过已有可破坏物体的位置。
+
+### 步骤 12：神殿放置
+
+```
+收集死胡同格（3面被墙包围的 FLOOR 格）:
+  wallCount = 上下左右四邻中 WALL 的数量
+  wallCount >= 3 且 该位置空闲 → 加入候选
+
+打乱候选，放置 1-2 个神殿
+类型: 50% 治疗神殿 (OBJ_SHRINE_HEAL), 50% 力量神殿 (OBJ_SHRINE_POWER)
+```
+
+### 步骤 13：诅咒祭坛放置
+
+**祭坛占 2 格宽：(x, y) 和 (x+1, y)**
+
+```
+出现条件:
+  ascConfig.guaranteedCurseAltar (Lv25 必出) OR (random < 0.3 且 floor >= 2)
+
+收集候选: 连续两格都是 FLOOR 且非起点终点
+最多 100 次尝试:
+  检查两格都无怪物/物品/对象
+  通过 → 放置:
+    (ax, ay): type = 'OBJ_ALTAR_CURSED', width = 2
+    (ax+1, ay): type = 'OBJ_ALTAR_PLACEHOLDER' (占位)
+
+Lv25 强制放置: 若100次尝试失败，清除第一个候选位置的所有实体后强制放置
+```
+
+### 步骤 14：迷雾粒子
+
+```
+条件: game.config.enableFog == true
+
+fogDensity = 2 (每隔2格放一个)
+fogFreeRadius = 5 (起点周围 5 格半径内不放)
+
+for y = 0 to height, step fogDensity:
+  for x = 0 to width, step fogDensity:
+    跳过: 到起点的欧几里得距离 < fogFreeRadius
+    创建 FogParticle
+
+最后调用 triggerInitialClear() 驱散起点附近的迷雾
+```
+
+---
+
+## 四、战争迷雾系统（FOV）
+
+### 4.1 数据结构
+
+```
+explored[y][x]: bool  // 是否曾经被探索过（已探索的区域在视野外显示为暗色但可见）
+visible[y][x]:  bool  // 当前帧是否在视野内（仅当前可见的区域全亮）
+```
+
+### 4.2 视野计算（Shadowcasting FOV）
+
+使用 **递归阴影投射算法（Recursive Shadowcasting）** 计算视野：
+
+```
+computeFOV(px, py, radius):
+  清空 visible[][] 为全 false
+  设置 visible[py][px] = true, explored[py][px] = true
+  
+  对 8 个八分区 (octant = 0..7) 分别执行:
+    _castLight(cx=px, cy=py, row=1, startSlope=1.0, endSlope=0.0, radius, 八分区变换矩阵)
+```
+
+**遮挡判定 ([_isBlocking](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#1351-1368))：**
+- WALL → 遮挡
+- DOOR → 遮挡（门关闭状态不透光）
+- 超出地图边界 → 遮挡
+
+> [revealAround(x, y, radius)](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#1389-1393) 是 [computeFOV](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#1173-1267) 的兼容别名。
+
+---
+
+## 五、关键设计模式总结（Unity 实现建议）
+
+### 5.1 生成管线架构
+
+```
+MapGenerator（核心管线）
+  ├── Phase 1: GridInitializer       → 初始化 120x120 全 WALL 网格
+  ├── Phase 2: RoomPlacer            → BSP 或随机放置 ≤8 个房间
+  ├── Phase 3: MazeCarver            → 递归回溯迷宫（步长2）
+  ├── Phase 4: RoomConnector         → 房间连接器（普通=FLOOR, 安全=DOOR）
+  ├── Phase 5: StairPlacer           → 楼梯放置
+  ├── Phase 6: PathValidator         → ensureMultiplePaths（BFS × 3）
+  ├── Phase 7: EntityPlacer          → NPC / 怪物 / Boss
+  ├── Phase 8: ItemPlacer            → 钥匙 / 宝箱
+  ├── Phase 9: ObjectPlacer          → 可破坏物 / 陷阱 / 神殿 / 祭坛
+  └── Phase 10: FogInitializer       → 迷雾粒子 + 初始驱散
+```
+
+### 5.2 核心不变量（Invariants）
+
+1. **地图边界**：第 0 行/列和最后一行/列始终为 WALL，永不打开
+2. **房间间隙**：任意两个房间之间至少有 1 格 WALL 间隔
+3. **安全房间封锁**：宝箱房/Boss 房只有 DOOR（而非 FLOOR）连接外界
+4. **钥匙数量 ≥ DOOR 数量**：保证所有门都可打开
+5. **多路径保证**：起点到终点至少有 3 条顶点不相交路径
+6. **同心圆刷新**：高等级怪物不会出现在起点附近
+7. **实体不重叠**：每个格子最多只有一个怪物/物品/对象（陷阱除外，可与走廊怪物共存）
+8. **楼梯位置保护**：起点和终点格子不放置任何陷阱/可破坏物/祭坛
+
+### 5.3 随机性控制
+
+- 整个 [generateLevel](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#73-763) 可接受可选的 `SeededRNG`
+- 所有随机操作（[_random()](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#28-35), [_randomInt()](file:///e:/selfgame/Magic_Tower_Wars/src/systems/MapSystem.js#36-46), 数组 shuffle）均通过统一的 RNG 代理
+- 若无种子 → 回退到 `Math.random()` / `UnityEngine.Random`
+- **每日挑战模式**必须使用种子 RNG 以保证所有玩家生成相同地图
+
+### 5.4 噩梦层级对地图生成的影响
+
+| 噩梦层级 | 影响                         |
+|------|----------------------------|
+| Lv12 | 陷阱密度 +50%，陷阱伤害 +50%        |
+| Lv19 | 怪物密度 +20%（`monsterDensityMultiplier`） |
+| Lv25 | 必定生成诅咒祭坛                   |
+
+> 其他噩梦层级修饰符（如怪物 HP/ATK 倍率）影响的是实体属性而非地图结构本身。

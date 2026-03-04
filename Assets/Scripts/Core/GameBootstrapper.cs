@@ -29,6 +29,7 @@ namespace EscapeTheTower.Core
         [SerializeField] private FloatingTextManager _floatingTextManager;
         [SerializeField] private HUDManager _hudManager;
         [SerializeField] private VictoryScreen _victoryScreen;
+        [SerializeField] private RuneSelectionPanel _runeSelectionPanel;
 
         private void Awake()
         {
@@ -76,8 +77,9 @@ namespace EscapeTheTower.Core
             EnsureAndRegister(ref _floatingTextManager);
             EnsureAndRegister(ref _hudManager);
             EnsureAndRegister(ref _victoryScreen);
+            EnsureAndRegister(ref _runeSelectionPanel);
 
-            Debug.Log("[GameBootstrapper] 核心服务初始化完成！共注册 9 个服务。");
+            Debug.Log("[GameBootstrapper] 核心服务初始化完成！共注册 10 个服务。");
         }
 
         /// <summary>

@@ -1,8 +1,14 @@
 // ============================================================================
 // 逃离魔塔 - 第一层 Boss AI：堕落的人型勇士 (FallenHeroBossAI)
-// 专属行为模式：
-//   阶段一（HP > 50%）：普攻 + 勇者冲锋（直线冲撞+击退+眩晕）
-//   阶段二（HP ≤ 50%）：触发处决大风车（霸体持续AOE）
+// 专属行为模式（基于格子移动系统）：
+//   阶段一（HP > 50%）：格子追击 + 勇者冲锋（高速直线步进+击退+眩晕）
+//   阶段二（HP ≤ 50%）：附加处决大风车（霸体+缓速追击+AOE伤害）
+//
+// 设计要点：
+//   - 追击移动由 MonsterBase.PursueTarget 驱动（保证 SetDirection 在
+//     GridMovement.Update 之前执行，解决组件执行顺序问题）
+//   - 冲锋方向锁定通过 MonsterBase.OverridePursuitDirection 实现
+//   - Boss 启用后设置 ExternalAttackControl = true，碰撞攻击由 Boss AI 管理
 //
 // 来源：GameData_Blueprints/04_1_Floor1_Dungeon.md 第三节
 // ============================================================================
@@ -19,8 +25,8 @@ namespace EscapeTheTower.Entity.Monster
     /// </summary>
     public enum BossPhase
     {
-        Phase1_Normal,      // HP > 50%：普攻 + 勇者冲锋
-        Phase2_Whirlwind,   // HP ≤ 50%：处决大风车模式
+        Phase1_Normal,      // HP > 50%：普攻追击 + 勇者冲锋
+        Phase2_Whirlwind,   // HP ≤ 50%：附加处决大风车
     }
 
     /// <summary>
@@ -30,37 +36,38 @@ namespace EscapeTheTower.Entity.Monster
     public class FallenHeroBossAI : MonoBehaviour
     {
         private MonsterBase _monster;
+        private GridMovement _gridMovement;
         private Transform _playerTarget;
 
         /// <summary>当前 Boss 战斗阶段</summary>
         public BossPhase CurrentPhase { get; private set; } = BossPhase.Phase1_Normal;
 
         // === 勇者冲锋参数 ===
-        private float _chargeCooldown = 8f;
+        private const float CHARGE_COOLDOWN = 8f;
+        private const float CHARGE_SPEED = 20f;           // 冲锋移动速度（格/秒）
+        private const float CHARGE_DURATION = 0.8f;        // 冲锋持续时间（秒）
+        private const float CHARGE_DAMAGE_MULT = 2.5f;     // 冲锋伤害 = 250% ATK
+        private const float CHARGE_STUN_DURATION = 1.0f;
+        private const float CHARGE_MIN_DISTANCE = 2f;      // 冲锋最小触发距离（格）
         private float _chargeTimer;
         private bool _isCharging;
-        private Vector3 _chargeDirection;
-        private float _chargeSpeed = 8f;
-        private float _chargeDuration = 0.5f;
+        private Vector2Int _chargeDirection;
         private float _chargeElapsed;
-        private float _chargeDamageMultiplier = 2.5f; // 冲锋伤害 = 250% ATK
-        private float _chargeStunDuration = 1.0f;
-        private bool _chargeHit; // 防止多次命中
+        private bool _chargeHit;
+        private float _normalMoveSpeed;
 
         // === 处决大风车参数 ===
+        private const float WHIRLWIND_DURATION = 5f;
+        private const float WHIRLWIND_TICK_INTERVAL = 0.3f;
+        private const float WHIRLWIND_DAMAGE_MULT = 0.6f;
+        private const float WHIRLWIND_MOVE_SPEED = 2f;
+        private const float WHIRLWIND_AOE_RADIUS = 2.5f;
+        private const float WHIRLWIND_COOLDOWN = 15f;
         private bool _whirlwindActive;
-        private float _whirlwindDuration = 5f;
         private float _whirlwindTimer;
-        private float _whirlwindTickInterval = 0.3f; // 每0.3秒一次AOE判定
         private float _whirlwindTickTimer;
-        private float _whirlwindDamageMultiplier = 0.6f; // 每跳 60% ATK
-        private float _whirlwindMoveSpeed = 1.5f; // 大风车期间移速
-        private float _whirlwindCooldown = 15f;
         private float _whirlwindCooldownTimer;
         private bool _hasEnteredPhase2;
-
-        // === 普攻计时器 ===
-        private float _attackTimer;
 
         // =====================================================================
         //  生命周期
@@ -69,18 +76,37 @@ namespace EscapeTheTower.Entity.Monster
         private void Awake()
         {
             _monster = GetComponent<MonsterBase>();
+            _gridMovement = GetComponent<GridMovement>();
         }
 
         private void Start()
         {
-            _chargeTimer = 3f; // 开场 3 秒后第一次冲锋
+            // 追击移动由 MonsterBase.PursueTarget 执行（保证执行时序正确）
+            // 普攻碰撞由 MonsterBase.OnGridMoveBlocked 处理（含冷却+AllowBump 管理）
+            // ExternalAttackControl 仅在冲锋期间临时开启
+
+            // 记录正常移动速度
+            _normalMoveSpeed = _monster.CurrentStats.Get(StatType.MoveSpeed) * 3f;
+            if (_normalMoveSpeed < 0.5f) _normalMoveSpeed = 3f;
+
+            // 初始冲锋冷却（给玩家准备时间）
+            _chargeTimer = 3f;
+
+            // 缓存玩家引用（不激活追击，Boss 默认巡逻）
+            FindPlayer();
+
+            Debug.Log("[Boss-堕落勇士] Boss AI 已激活！默认巡逻模式，被攻击后追击。");
         }
 
         private void Update()
         {
-            if (_monster == null || !_monster.IsAlive) return;
+            if (!_monster.IsAlive) return;
+
             if (_playerTarget == null) FindPlayer();
             if (_playerTarget == null) return;
+
+            // Boss 未被激怒前保持巡逻，不执行冲锋/大风车
+            if (_monster.AIState != MonsterAIState.Pursuing) return;
 
             UpdatePhaseTransition();
 
@@ -96,7 +122,7 @@ namespace EscapeTheTower.Entity.Monster
         }
 
         // =====================================================================
-        //  阶段切换检测
+        //  阶段切换
         // =====================================================================
 
         private void UpdatePhaseTransition()
@@ -110,14 +136,15 @@ namespace EscapeTheTower.Entity.Monster
             {
                 _hasEnteredPhase2 = true;
                 CurrentPhase = BossPhase.Phase2_Whirlwind;
-                _whirlwindCooldownTimer = 0f; // 立即可用
-
+                _whirlwindCooldownTimer = 0f;
                 Debug.Log("[Boss-堕落勇士] ⚠️ 进入第二阶段！HP ≤ 50%");
             }
         }
 
         // =====================================================================
-        //  阶段一：普攻 + 勇者冲锋
+        //  阶段一：格子追击 + 勇者冲锋
+        //  追击由 MonsterBase.PursueTarget 自动执行（Update 顺序正确）
+        //  冲锋时通过 OverridePursuitDirection 锁定方向
         // =====================================================================
 
         private void UpdatePhase1()
@@ -130,38 +157,53 @@ namespace EscapeTheTower.Entity.Monster
                 return;
             }
 
-            // 追击玩家
-            PursuePlayer(1.0f);
-
-            // 普攻
-            _attackTimer -= dt;
-            float distance = Vector3.Distance(transform.position, _playerTarget.position);
-            if (distance <= 1.5f && _attackTimer <= 0f)
-            {
-                PerformNormalAttack();
-                _attackTimer = _monster.CurrentStats.Get(StatType.AttackSpeed) > 0f
-                    ? 1f / _monster.CurrentStats.Get(StatType.AttackSpeed)
-                    : 1.5f;
-            }
+            // 非冲锋期间：追击由 MonsterBase.PursueTarget 自动处理
+            // 不需要手动调用 SetDirection
 
             // 冲锋冷却
             _chargeTimer -= dt;
-            if (_chargeTimer <= 0f && distance > 2f)
+
+            if (_chargeTimer <= 0f && _playerTarget != null)
             {
-                StartCharge();
+                float distance = Vector2.Distance(
+                    (Vector2)(Vector2Int)_gridMovement.GridPosition,
+                    (Vector2)GridMovement.WorldToGrid(_playerTarget.position));
+
+                if (distance >= CHARGE_MIN_DISTANCE)
+                {
+                    StartCharge();
+                }
             }
         }
 
-        /// <summary>
-        /// 启动勇者冲锋
-        /// 锁定玩家当前位置并发起直线冲撞
-        /// </summary>
+        // =====================================================================
+        //  勇者冲锋
+        // =====================================================================
+
         private void StartCharge()
         {
             _isCharging = true;
             _chargeElapsed = 0f;
             _chargeHit = false;
-            _chargeDirection = (_playerTarget.position - transform.position).normalized;
+
+            // 锁定冲锋方向
+            Vector2 diff = _playerTarget.position - transform.position;
+            if (Mathf.Abs(diff.x) >= Mathf.Abs(diff.y))
+                _chargeDirection = new Vector2Int(diff.x > 0 ? 1 : -1, 0);
+            else
+                _chargeDirection = new Vector2Int(0, diff.y > 0 ? 1 : -1);
+
+            // 临时大幅加速
+            _gridMovement.SetMoveSpeed(CHARGE_SPEED);
+
+            // 通过 OverridePursuitDirection 锁定方向
+            _monster.OverridePursuitDirection = _chargeDirection;
+
+            // 冲锋期间由 Boss AI 处理碰撞伤害（跳过 MonsterBase 的默认攻击）
+            _monster.ExternalAttackControl = true;
+
+            // 订阅碰撞事件（冲锋命中检测）
+            _gridMovement.OnMoveBlocked += OnChargeBlocked;
 
             Debug.Log("[Boss-堕落勇士] 🗡️ 勇者冲锋！");
         }
@@ -170,42 +212,53 @@ namespace EscapeTheTower.Entity.Monster
         {
             _chargeElapsed += dt;
 
-            // 高速直线位移
-            transform.position += (Vector3)(_chargeDirection * _chargeSpeed * dt);
+            // 每帧持续设置锁定方向（MonsterBase.PursueTarget 会读取此值）
+            _monster.OverridePursuitDirection = _chargeDirection;
 
-            // 碰撞检测（简化：检测与玩家的距离）
-            if (!_chargeHit && _playerTarget != null)
+            // 冲锋超时结束
+            if (_chargeElapsed >= CHARGE_DURATION)
             {
-                float dist = Vector3.Distance(transform.position, _playerTarget.position);
-                if (dist <= 1.0f)
-                {
-                    _chargeHit = true;
-                    OnChargeHitPlayer();
-                }
-            }
-
-            // 冲锋结束
-            if (_chargeElapsed >= _chargeDuration)
-            {
-                _isCharging = false;
-                _chargeTimer = _chargeCooldown;
+                EndCharge();
             }
         }
 
-        /// <summary>
-        /// 冲锋命中玩家：巨额伤害 + 击退 + 1秒眩晕
-        /// </summary>
-        private void OnChargeHitPlayer()
+        private void EndCharge()
         {
-            var playerEntity = _playerTarget.GetComponent<EntityBase>();
-            if (playerEntity == null || !playerEntity.IsAlive) return;
+            _isCharging = false;
+            _chargeTimer = CHARGE_COOLDOWN;
 
-            float atk = _monster.CurrentStats.Get(StatType.ATK);
+            // 恢复正常速度
+            _gridMovement.SetMoveSpeed(_normalMoveSpeed);
+
+            // 清除方向覆盖，恢复默认追踪
+            _monster.OverridePursuitDirection = null;
+
+            // 恢复 MonsterBase 的默认碰撞攻击
+            _monster.ExternalAttackControl = false;
+
+            // 取消冲锋碰撞事件
+            _gridMovement.OnMoveBlocked -= OnChargeBlocked;
+        }
+
+        /// <summary>
+        /// 冲锋碰撞命中：额外伤害 + 击退 + 眩晕
+        /// </summary>
+        private void OnChargeBlocked(Vector2Int blockedTile, GameObject blocker)
+        {
+            if (_chargeHit || blocker == null) return;
+
+            var playerEntity = blocker.GetComponent<EntityBase>();
+            if (playerEntity == null || !playerEntity.IsAlive) return;
+            if (playerEntity.Faction != Faction.Player) return;
+
+            _chargeHit = true;
+
+            // 冲锋额外伤害（250% ATK）
             var damageResult = DamageCalculator.Calculate(
                 _monster.CurrentStats,
                 playerEntity.CurrentStats,
                 baseDamage: 0f,
-                atkScaling: _chargeDamageMultiplier,
+                atkScaling: CHARGE_DAMAGE_MULT,
                 damageType: DamageType.Physical
             );
 
@@ -214,22 +267,28 @@ namespace EscapeTheTower.Entity.Monster
                 playerEntity.TakeDamage(damageResult, _monster.EntityID);
 
                 // 施加眩晕
-                var statusMgr = _playerTarget.GetComponent<StatusEffectManager>();
+                var statusMgr = blocker.GetComponent<StatusEffectManager>();
                 if (statusMgr != null && !statusMgr.IsUnstoppable())
                 {
-                    statusMgr.ApplyEffect(StatusEffectType.Stun, _chargeStunDuration, 0f, _monster.EntityID);
+                    statusMgr.ApplyEffect(StatusEffectType.Stun, CHARGE_STUN_DURATION, 0f, _monster.EntityID);
                 }
 
-                // 击退效果
-                Vector3 knockback = _chargeDirection * 3f;
-                _playerTarget.position += knockback;
+                // 击退：格子级位移
+                var playerGrid = blocker.GetComponent<GridMovement>();
+                if (playerGrid != null)
+                {
+                    Vector2Int knockbackTarget = playerGrid.GridPosition + _chargeDirection * 2;
+                    playerGrid.SetGridPosition(knockbackTarget);
+                }
 
-                Debug.Log($"[Boss-堕落勇士] 勇者冲锋命中！伤害={damageResult.FinalDamage:F0} +击退 +眩晕{_chargeStunDuration}s");
+                Debug.Log($"[Boss-堕落勇士] 勇者冲锋命中！额外伤害={damageResult.FinalDamage:F0} +击退2格 +眩晕{CHARGE_STUN_DURATION}s");
             }
+
+            EndCharge();
         }
 
         // =====================================================================
-        //  阶段二：处决大风车
+        //  阶段二：附加处决大风车
         // =====================================================================
 
         private void UpdatePhase2()
@@ -242,10 +301,9 @@ namespace EscapeTheTower.Entity.Monster
                 return;
             }
 
-            // 非大风车期间：和阶段一一样普攻+追击+冲锋
+            // 非大风车期间：维持阶段一逻辑
             UpdatePhase1();
 
-            // 大风车冷却
             _whirlwindCooldownTimer -= dt;
             if (_whirlwindCooldownTimer <= 0f)
             {
@@ -253,22 +311,21 @@ namespace EscapeTheTower.Entity.Monster
             }
         }
 
-        /// <summary>
-        /// 启动处决大风车
-        /// 原地旋转重剑变钢铁风暴，免疫所有控制（霸体）
-        /// </summary>
         private void StartWhirlwind()
         {
             _whirlwindActive = true;
             _whirlwindTimer = 0f;
             _whirlwindTickTimer = 0f;
 
+            // 大风车期间低速追击
+            _gridMovement.SetMoveSpeed(WHIRLWIND_MOVE_SPEED);
+
             // 激活霸体
             var statusMgr = GetComponent<StatusEffectManager>();
             if (statusMgr != null)
             {
                 statusMgr.ClearAllDebuffs();
-                statusMgr.ApplyEffect(StatusEffectType.Unstoppable, _whirlwindDuration, 0f, _monster.EntityID);
+                statusMgr.ApplyEffect(StatusEffectType.Unstoppable, WHIRLWIND_DURATION, 0f, _monster.EntityID);
             }
 
             Debug.Log("[Boss-堕落勇士] 🌪️ 处决大风车！霸体激活！");
@@ -279,40 +336,38 @@ namespace EscapeTheTower.Entity.Monster
             _whirlwindTimer += dt;
             _whirlwindTickTimer += dt;
 
-            // 缓慢向玩家移动
-            if (_playerTarget != null)
-            {
-                Vector3 dir = (_playerTarget.position - transform.position).normalized;
-                transform.position += dir * (_whirlwindMoveSpeed * dt);
-            }
+            // 追击由 MonsterBase.PursueTarget 自动处理（低速模式）
+            // 旋转视觉
+            transform.Rotate(0f, 0f, 720f * dt);
 
-            // 每 tick 对范围内敌人造成伤害
-            if (_whirlwindTickTimer >= _whirlwindTickInterval)
+            // AOE tick
+            if (_whirlwindTickTimer >= WHIRLWIND_TICK_INTERVAL)
             {
                 _whirlwindTickTimer = 0f;
                 WhirlwindTick();
             }
 
-            // 大风车结束
-            if (_whirlwindTimer >= _whirlwindDuration)
+            if (_whirlwindTimer >= WHIRLWIND_DURATION)
             {
-                _whirlwindActive = false;
-                _whirlwindCooldownTimer = _whirlwindCooldown;
-                Debug.Log("[Boss-堕落勇士] 大风车结束。");
+                EndWhirlwind();
             }
         }
 
-        /// <summary>
-        /// 大风车每跳 AOE 伤害
-        /// </summary>
+        private void EndWhirlwind()
+        {
+            _whirlwindActive = false;
+            _whirlwindCooldownTimer = WHIRLWIND_COOLDOWN;
+            _gridMovement.SetMoveSpeed(_normalMoveSpeed);
+            transform.rotation = Quaternion.identity;
+            Debug.Log("[Boss-堕落勇士] 大风车结束。");
+        }
+
         private void WhirlwindTick()
         {
             if (_playerTarget == null) return;
 
             float distance = Vector3.Distance(transform.position, _playerTarget.position);
-            float aoeRadius = 2.5f;
-
-            if (distance <= aoeRadius)
+            if (distance <= WHIRLWIND_AOE_RADIUS)
             {
                 var playerEntity = _playerTarget.GetComponent<EntityBase>();
                 if (playerEntity != null && playerEntity.IsAlive)
@@ -321,56 +376,41 @@ namespace EscapeTheTower.Entity.Monster
                         _monster.CurrentStats,
                         playerEntity.CurrentStats,
                         baseDamage: 0f,
-                        atkScaling: _whirlwindDamageMultiplier,
+                        atkScaling: WHIRLWIND_DAMAGE_MULT,
                         damageType: DamageType.Physical
                     );
-
                     playerEntity.TakeDamage(damageResult, _monster.EntityID);
                 }
             }
         }
 
         // =====================================================================
-        //  通用方法
+        //  通用辅助
         // =====================================================================
-
-        private void PursuePlayer(float speedMultiplier)
-        {
-            if (_playerTarget == null) return;
-            float moveSpeed = _monster.CurrentStats.Get(StatType.MoveSpeed) * 2.5f * speedMultiplier;
-            Vector3 dir = (_playerTarget.position - transform.position).normalized;
-            transform.position += dir * (moveSpeed * Time.deltaTime);
-        }
-
-        private void PerformNormalAttack()
-        {
-            if (_playerTarget == null) return;
-            var playerEntity = _playerTarget.GetComponent<EntityBase>();
-            if (playerEntity == null || !playerEntity.IsAlive) return;
-
-            var damageResult = DamageCalculator.Calculate(
-                _monster.CurrentStats,
-                playerEntity.CurrentStats,
-                baseDamage: 0f,
-                atkScaling: 1.0f,
-                damageType: DamageType.Physical
-            );
-
-            if (!DamageCalculator.CheckDodge(playerEntity.CurrentStats))
-            {
-                playerEntity.TakeDamage(damageResult, _monster.EntityID);
-            }
-        }
 
         private void FindPlayer()
         {
-            // 通过标签搜索玩家（也可通过 ServiceLocator 注册的 HeroController 获取）
+            // 缓存守护：已找到玩家且引用有效时直接返回
+            if (_playerTarget != null) return;
+
             var playerObj = GameObject.FindWithTag("Player");
             if (playerObj != null)
             {
                 _playerTarget = playerObj.transform;
-                _monster.EngageTarget(_playerTarget);
+                return;
             }
+
+            var hero = FindAnyObjectByType<EscapeTheTower.Entity.Hero.HeroController>();
+            if (hero != null)
+            {
+                _playerTarget = hero.transform;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_gridMovement != null)
+                _gridMovement.OnMoveBlocked -= OnChargeBlocked;
         }
     }
 }

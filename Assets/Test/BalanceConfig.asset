@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99aac7b7f393a4f44ab6ed2e29f82b49, type: 3}
+  m_Name: BalanceConfig
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.BalanceConfig_SO
+  runeDropChance: 0.4
+  runePityThreshold: 15
+  classRuneForceChance: 0.1
+  runeWeightCommon: 0.55
+  runeWeightRare: 0.3
+  runeWeightExceptional: 0.11
+  runeWeightEpic: 0.035
+  runeWeightLegendary: 0.005
+  eliteBaseMutationChance: 0.05
+  eliteMutationChancePerFloor: 0.05
+  eliteScaleMultiplier: 1.5
+  eliteStatMultiplierMin: 3
+  eliteStatMultiplierMax: 5
+  eliteExpMultiplier: 5
+  eliteMinHiddenTraits: 1
+  eliteMaxHiddenTraits: 3
+  dropWeightCommon: 0.6
+  dropWeightRare: 0.25
+  dropWeightEpic: 0.1
+  dropWeightLegendary: 0.04
+  dropWeightMythic: 0.009
+  dropWeightPrismatic: 0.001
+  enhanceFloorRate: 0.05
+  baseExpRequired: 100
+  expLinearIncrement: 20
+  levelUpStatBonus: 1
+  roomWeightCombat: 0.7
+  roomWeightTreasure: 0.1
+  roomWeightEvent: 0.2
+  reaperTriggerTimeSeconds: 2700
+  fatigueLethalStacks: 10
+  maxLootSpawnsPerFrame: 3
+  mobBaseExpMin: 3
+  mobBaseExpMax: 5
+  bruteBaseExpMin: 8
+  bruteBaseExpMax: 12
+  bossBaseExpMin: 150
+  bossBaseExpMax: 200
+  baseCritMultiplierMin: 1.4
+  baseCritMultiplierMax: 1.5
