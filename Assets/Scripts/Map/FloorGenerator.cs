@@ -98,6 +98,8 @@ namespace EscapeTheTower.Map
         public QualityTier Quality;
         /// <summary>效果数值（血瓶回复量/金币数等）</summary>
         public int Value;
+        /// <summary>装备数据（仅当 Type == Equipment 时有值）</summary>
+        public EscapeTheTower.Equipment.EquipmentData EquipData;
     }
 
     // =========================================================================
@@ -459,9 +461,42 @@ namespace EscapeTheTower.Map
             {
                 var candidates = GetConnectorCandidates(grid, room);
 
-                if (room.IsSecure)
+                // === 出生房特殊处理：至少 3 个无门出口（多路线出发） ===
+                bool isSpawnRoom = (grid.Rooms.Count > 0 && room == grid.Rooms[0]);
+                if (isSpawnRoom)
                 {
-                    // 安全房间：仅开 1 个口，设为 DOOR（临时铜门，步骤9覆盖）
+                    // 出生房：≥3 个 Floor 出口，无门
+                    int minExits = 3;
+                    Shuffle(candidates, rng);
+
+                    if (candidates.Count >= minExits)
+                    {
+                        for (int i = 0; i < Mathf.Max(minExits, candidates.Count); i++)
+                        {
+                            if (i >= candidates.Count) break;
+                            grid.Tiles[candidates[i].x, candidates[i].y] = TileType.Floor;
+                            room.Entrances.Add(candidates[i]);
+                        }
+                    }
+                    else
+                    {
+                        // 候选不足：先开所有候选口
+                        for (int i = 0; i < candidates.Count; i++)
+                        {
+                            grid.Tiles[candidates[i].x, candidates[i].y] = TileType.Floor;
+                            room.Entrances.Add(candidates[i]);
+                        }
+                        // 剩余用 ForceConnect 补足（每次开 1 个口）
+                        int remaining = minExits - candidates.Count;
+                        for (int i = 0; i < remaining; i++)
+                        {
+                            ForceConnect(grid, room, rng, false);
+                        }
+                    }
+                }
+                else if (room.IsSecure)
+                {
+                    // 安全房间（非出生房）：仅开 1 个口，设为 DOOR（临时铜门，步骤9覆盖）
                     if (candidates.Count > 0)
                     {
                         var chosen = candidates[rng.Next(candidates.Count)];

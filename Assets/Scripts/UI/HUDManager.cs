@@ -14,6 +14,7 @@
 
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using EscapeTheTower.Core;
 using EscapeTheTower.Data;
 using EscapeTheTower.Entity.Hero;
@@ -79,8 +80,22 @@ namespace EscapeTheTower.UI
             EventManager.Unsubscribe<OnItemPickedUpEvent>(OnItemPickedUp);
         }
 
+        // 装备面板状态追踪
+        private bool _isEquipmentPanelOpen;
+
         private void Update()
         {
+            // --- B 键：装备面板开关 ---
+            if (Keyboard.current != null && Keyboard.current.bKey.wasPressedThisFrame)
+            {
+                _isEquipmentPanelOpen = !_isEquipmentPanelOpen;
+                EventManager.Publish(new OnEquipmentPanelToggleEvent
+                {
+                    Meta = new EventMeta(0),
+                    IsOpen = _isEquipmentPanelOpen,
+                });
+            }
+
             if (heroReference == null)
             {
                 // 限时重试：每秒最多查找一次，避免每帧反射开销
@@ -361,7 +376,7 @@ namespace EscapeTheTower.UI
                 ShowFloatText(text);
         }
 
-        /// <summary>显示浮动提示文字（2秒后自动销毁）</summary>
+        /// <summary>显示浮动提示文字（在玩家头顶，2秒后自动销毁）</summary>
         private void ShowFloatText(string message)
         {
             if (_canvasTransform == null) return;
@@ -369,11 +384,23 @@ namespace EscapeTheTower.UI
             var obj = new GameObject("FloatText", typeof(RectTransform));
             obj.transform.SetParent(_canvasTransform, false);
             var rect = obj.GetComponent<RectTransform>();
-            rect.anchorMin = new Vector2(0.5f, 0.7f);
-            rect.anchorMax = new Vector2(0.5f, 0.7f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = Vector2.zero;
             rect.sizeDelta = new Vector2(400, 40);
+
+            // 将玩家世界坐标转换为 Canvas 局部坐标（头顶偏上）
+            Vector2 anchoredPos = Vector2.zero;
+            if (heroReference != null && Camera.main != null)
+            {
+                // 玩家头顶偏移（世界坐标 Y+0.8）
+                Vector3 worldPos = heroReference.transform.position + Vector3.up * 0.8f;
+                Vector2 screenPos = Camera.main.WorldToScreenPoint(worldPos);
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    _canvasTransform as RectTransform, screenPos, null, out anchoredPos);
+            }
+
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = anchoredPos;
 
             var text = obj.AddComponent<Text>();
             text.text = message;

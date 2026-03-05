@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b07d6ef6ef35f1d4ea1a9edf9fb02a63, type: 3}
+  m_Name: prefix_attacking
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Equipment.AffixDefinition_SO
+  affixID: prefix_attacking
+  slotType: 0
+  nameCN: "\u5F3A\u653B\u7684"
+  nameEN: Attacking
+  validSlots: 00000000
+  bonusStat: 4
+  isPercentage: 1
+  minValue: 5
+  maxValue: 15
+  hasPenalty: 0
+  penaltyStat: 4
+  penaltyValue: 0

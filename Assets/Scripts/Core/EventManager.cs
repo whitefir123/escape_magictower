@@ -161,6 +161,8 @@ namespace EscapeTheTower.Core
     public struct OnRuneDraftCompleteEvent : IGameEvent
     {
         public EventMeta Meta { get; set; }
+        /// <summary>选中的符文数据（放弃选择时为 null）</summary>
+        public Data.RuneData_SO SelectedRune;
     }
 
     /// <summary>门被打开事件</summary>
@@ -185,6 +187,8 @@ namespace EscapeTheTower.Core
         public Vector2Int Position;
         /// <summary>效果数值（回复量/金币数等）</summary>
         public int Value;
+        /// <summary>装备数据（仅当 ItemType == Equipment 时有值）</summary>
+        public Equipment.EquipmentData EquipData;
     }
 
     /// <summary>宝箱被打开事件</summary>
@@ -221,6 +225,22 @@ namespace EscapeTheTower.Core
         public EventMeta Meta { get; set; }
         /// <summary>掉落的钥匙类型</summary>
         public DoorTier KeyTier;
+    }
+
+    /// <summary>装备面板开关事件（由热键/UI按钮发布，EquipmentPanelUI 订阅）</summary>
+    public struct OnEquipmentPanelToggleEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>true=打开, false=关闭</summary>
+        public bool IsOpen;
+    }
+
+    /// <summary>装备穿戴/卸除变更事件（穿戴/卸除完成后广播，通知 UI 刷新）</summary>
+    public struct OnEquipmentChangedEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+        /// <summary>发生变更的槽位</summary>
+        public EquipmentSlot Slot;
     }
 
     // =========================================================================

@@ -113,13 +113,48 @@ namespace EscapeTheTower.Entity
             Debug.Log($"[宝箱] 🎁 宝箱已打开！位置=({GridPosition.x},{GridPosition.y}) " +
                       (OwnerRoomID > 0 ? $"房间={OwnerRoomID}" : "路途宝箱"));
 
-            // 更新视觉（变暗表示已开启）
-            var sr = GetComponent<SpriteRenderer>();
-            if (sr != null) sr.color = new Color(0.3f, 0.3f, 0.3f, 0.5f);
+            // 生成奖励掉落
+            GenerateReward();
 
-            // TODO: 生成奖励掉落（金币、装备、消耗品等）
+            // 取消碰撞注册并销毁宝箱
+            var collision = TilemapCollisionProvider.Instance;
+            collision?.UnregisterWall(GridPosition);
+            Destroy(gameObject);
 
             return true;
+        }
+
+        // =====================================================================
+        //  奖励掉落生成
+        // =====================================================================
+
+        /// <summary>根据宝箱所属房间的门等级生成奖励掉落</summary>
+        private void GenerateReward()
+        {
+            bool isCorridorChest = (OwnerRoomID == 0);
+            var doorTier = DoorTier.None;
+            bool isBossRoom = false;
+
+            // 查找房间门等级（仅房间宝箱）
+            if (!isCorridorChest)
+            {
+                var transitionMgr = FloorTransitionManager.Instance;
+                if (transitionMgr?.CurrentFloorGrid != null)
+                {
+                    var grid = transitionMgr.CurrentFloorGrid;
+                    var room = grid.GetRoomAt(GridPosition.x, GridPosition.y);
+                    if (room != null)
+                    {
+                        doorTier = room.HasDoor ? room.DoorTier : DoorTier.None;
+                        isBossRoom = (room.Type == RoomType.Boss);
+                    }
+                }
+            }
+
+            var rng = new System.Random(
+                GridPosition.x * 1000 + GridPosition.y + System.Environment.TickCount);
+            Data.LootTableHelper.GenerateChestReward(
+                GridPosition, doorTier, isBossRoom, isCorridorChest, rng);
         }
 
         // =====================================================================

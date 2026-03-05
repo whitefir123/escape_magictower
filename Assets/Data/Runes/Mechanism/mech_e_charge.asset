@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d2905ebd48669b499a65699c82bd5c0, type: 3}
+  m_Name: mech_e_charge
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.RuneData_SO
+  runeName: "\u84C4\u529B\u91CD\u51FB"
+  runeID: mech_e_charge
+  description: "3 \u79D2\u672A\u653B\u51FB\u540E\uFF0C\u4E0B\u4E00\u6B21\u653B\u51FB\u5F15\u53D1\u51B2\u51FB\u6CE2
+    (150%ATK) \u989D\u5916\u7269\u7406\u6253\u51FB\u3002\n[\u91CD\u590D\u83B7\u53D6\u5347\u7EA7]
+    \u6BCF\u5347 1 \u7EA7\uFF0C\u51B2\u51FB\u6CE2\u500D\u7387 +50%\u3002"
+  rarity: 2
+  acquisitionType: 1
+  statBoostType: 0
+  statBoostAmount: 0
+  isClassSpecific: 0
+  restrictedClass: 0
+  effectTag: "\u84C4\u529B\u7206\u53D1"
+  currentLevel: 1
+  upgradeDescription: "\u6BCF\u7EA7 +50% \u500D\u7387"

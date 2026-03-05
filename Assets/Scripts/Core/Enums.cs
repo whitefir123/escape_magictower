@@ -228,6 +228,7 @@ namespace EscapeTheTower
         KeySilver,      // 银钥匙
         KeyGold,        // 金钥匙
         GoldPile,       // 金币堆
+        Equipment,      // 装备掉落物
     }
 
     /// <summary>
@@ -248,10 +249,19 @@ namespace EscapeTheTower
     {
         Weapon,     // 武器
         Helmet,     // 头盔
-        Armor,      // 护甲
+        Armor,      // 护甲（胸甲）
         Gloves,     // 手套
-        Boots,      // 鞋子
-        Accessory,  // 饰品
+        Boots,      // 鞋靴
+        Accessory,  // 首饰
+    }
+
+    /// <summary>
+    /// 词缀槽位类型 —— 前缀 / 后缀
+    /// </summary>
+    public enum AffixSlotType
+    {
+        Prefix,     // 前缀（直接战斗数值增幅）
+        Suffix,     // 后缀（功能性辅助、异常状态挂载、特殊机制触发）
     }
 
     /// <summary>

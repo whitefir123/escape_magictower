@@ -139,6 +139,10 @@ namespace EscapeTheTower.Map
                 _ => "门",
             };
             Debug.Log($"[门] 🔓 {tierName}已打开！位置=({doorPos.x},{doorPos.y})");
+
+            // 揭示门后房间的迷雾
+            FogOfWarManager.Instance?.RevealRoom(doorPos);
+
             return true;
         }
     }

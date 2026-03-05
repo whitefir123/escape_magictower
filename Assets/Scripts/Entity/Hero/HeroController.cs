@@ -11,6 +11,7 @@ using UnityEngine;
 using EscapeTheTower.Core;
 using EscapeTheTower.Data;
 using EscapeTheTower.Combat;
+using EscapeTheTower.Equipment;
 
 namespace EscapeTheTower.Entity.Hero
 {
@@ -21,6 +22,7 @@ namespace EscapeTheTower.Entity.Hero
     [RequireComponent(typeof(HeroSkillHandler))]
     [RequireComponent(typeof(HeroInventory))]
     [RequireComponent(typeof(HeroCombatHandler))]
+    [RequireComponent(typeof(HeroEquipmentManager))]
     public class HeroController : EntityBase
     {
         [Header("=== 英雄专属数据 ===")]
@@ -36,6 +38,7 @@ namespace EscapeTheTower.Entity.Hero
         private HeroSkillHandler _skillHandler;
         private HeroInventory _inventory;
         private HeroCombatHandler _combatHandler;
+        private HeroEquipmentManager _equipmentMgr;
 
         // === 移动速度缓存（避免每帧重复调用 SetMoveSpeed） ===
         private float _lastMoveSpeed = -1f;
@@ -132,6 +135,9 @@ namespace EscapeTheTower.Entity.Hero
             _combatHandler = GetComponent<HeroCombatHandler>();
             if (_combatHandler == null) _combatHandler = gameObject.AddComponent<HeroCombatHandler>();
 
+            _equipmentMgr = GetComponent<HeroEquipmentManager>();
+            if (_equipmentMgr == null) _equipmentMgr = gameObject.AddComponent<HeroEquipmentManager>();
+
             Faction = Faction.Player;
         }
 
@@ -210,6 +216,12 @@ namespace EscapeTheTower.Entity.Hero
             _inventory.Initialize(this);
             _combatHandler.Initialize(this, _skillHandler, _gridMovement);
 
+            // 装备穿戴变更时重算属性
+            _equipmentMgr.OnEquipmentChanged += RecalculateStats;
+
+            // 订阅符文选取完成事件，将属性符文注入管线L4
+            EventManager.Subscribe<OnRuneDraftCompleteEvent>(OnRuneDraftComplete);
+
             // 对齐到格子
             _gridMovement.SnapToGrid();
 
@@ -270,6 +282,9 @@ namespace EscapeTheTower.Entity.Hero
 
         private void OnArrivedAtTile(Vector2Int tilePos)
         {
+            // === 战争迷雾揭示 ===
+            EscapeTheTower.Map.FogOfWarManager.Instance?.OnPlayerMoved(tilePos);
+
             // === 拾取物交互 ===
             var pickupMgr = EscapeTheTower.Map.PickupManager.Instance;
             if (pickupMgr != null)
@@ -298,6 +313,20 @@ namespace EscapeTheTower.Entity.Hero
                         case PickupType.GoldPile:
                             Gold += item.Value;
                             Debug.Log($"[拾取] 金币堆 +{item.Value}，总计={Gold}");
+                            break;
+                        case PickupType.Equipment:
+                            // 直接调用装备管理器处理拾取（与其他拾取物一致的直接调用模式）
+                            if (item.EquipData != null && _equipmentMgr != null)
+                            {
+                                if (!_equipmentMgr.HasEquipped(item.EquipData.slot))
+                                {
+                                    _equipmentMgr.Equip(item.EquipData);
+                                }
+                                else
+                                {
+                                    _equipmentMgr.AddToInventory(item.EquipData);
+                                }
+                            }
                             break;
                     }
 
@@ -369,6 +398,54 @@ namespace EscapeTheTower.Entity.Hero
             {
                 _gridMovement.OnArrivedAtTile -= OnArrivedAtTile;
             }
+            if (_equipmentMgr != null)
+            {
+                _equipmentMgr.OnEquipmentChanged -= RecalculateStats;
+            }
+            EventManager.Unsubscribe<OnRuneDraftCompleteEvent>(OnRuneDraftComplete);
+        }
+
+        // =====================================================================
+        //  符文选取回调 —— 将属性符文注入管线L4
+        // =====================================================================
+
+        /// <summary>
+        /// 符文三选一结束后回调：属性符文直接注入管线L4层
+        /// 机制符文的效果由各自的机制钩子实现，此处不处理
+        /// </summary>
+        private void OnRuneDraftComplete(OnRuneDraftCompleteEvent evt)
+        {
+            if (evt.SelectedRune == null) return;
+
+            // 仅属性符文（KillDrop）类型直接注入数值加成
+            if (evt.SelectedRune.acquisitionType == RuneAcquisitionType.KillDrop
+                && evt.SelectedRune.statBoostAmount > 0f)
+            {
+                var bonus = new Data.StatBlock();
+                bonus.Set(evt.SelectedRune.statBoostType, evt.SelectedRune.statBoostAmount);
+                AddRuneStat(bonus);
+                Debug.Log($"[HeroController] 属性符文注入管线L4：" +
+                          $"{evt.SelectedRune.statBoostType} +{evt.SelectedRune.statBoostAmount}");
+            }
+        }
+
+        // =====================================================================
+        //  属性重算重写（注入装备 StatBlock）
+        // =====================================================================
+
+        /// <summary>
+        /// 重写属性重算：从 HeroEquipmentManager 拉取装备 StatBlock 列表
+        /// 注入 _equipmentStats，然后调用基类的全量重算
+        /// </summary>
+        public override void RecalculateStats()
+        {
+            // 从装备管理器获取当前穿戴装备的属性块
+            if (_equipmentMgr != null)
+            {
+                _equipmentStats = _equipmentMgr.GetEquipmentStatBlocks();
+            }
+
+            base.RecalculateStats();
         }
     }
 }

@@ -11,6 +11,7 @@
 using UnityEngine;
 using EscapeTheTower.Core;
 using EscapeTheTower.Map;
+using EscapeTheTower.Equipment;
 
 namespace EscapeTheTower
 {
@@ -23,6 +24,8 @@ namespace EscapeTheTower
         public QualityTier Quality { get; private set; }
         public int Value { get; private set; }
         public Vector2Int GridPosition { get; private set; }
+        /// <summary>装备数据（仅当 Type == Equipment 时有值）</summary>
+        public EquipmentData EquipData { get; private set; }
 
         /// <summary>初始化拾取物数据并生成视觉占位</summary>
         public void Initialize(PickupType type, QualityTier quality, int value, Vector2Int pos)
@@ -31,6 +34,18 @@ namespace EscapeTheTower
             Quality = quality;
             Value = value;
             GridPosition = pos;
+
+            EnsureVisual();
+        }
+
+        /// <summary>装备类型专用初始化</summary>
+        public void InitializeEquipment(EquipmentData equipData, Vector2Int pos)
+        {
+            Type = PickupType.Equipment;
+            Quality = equipData.quality;
+            Value = equipData.itemPower;
+            GridPosition = pos;
+            EquipData = equipData;
 
             EnsureVisual();
         }
@@ -46,6 +61,7 @@ namespace EscapeTheTower
                 Quality = Quality,
                 Position = GridPosition,
                 Value = Value,
+                EquipData = EquipData, // 装备数据随事件一起广播
             });
 
             string itemName = GetDisplayName();
@@ -54,6 +70,9 @@ namespace EscapeTheTower
                 PickupType.HealthPotion => $"回复 {Value} HP",
                 PickupType.ManaPotion => $"回复 {Value} MP",
                 PickupType.GoldPile => $"{Value} 金币",
+                PickupType.Equipment => EquipData != null
+                    ? $"[{EquipData.quality}] {EquipData.slot} iPwr={Value} 词缀={EquipData.affixes?.Count ?? 0}条 鎛孔={EquipData.socketCount}"
+                    : $"iPwr={Value}",
                 _ => "",
             };
             Debug.Log($"[拾取] {itemName} {valueStr}");
@@ -76,6 +95,7 @@ namespace EscapeTheTower
                 PickupType.KeySilver => "银钥匙",
                 PickupType.KeyGold => "金钥匙",
                 PickupType.GoldPile => "金币堆",
+                PickupType.Equipment => EquipData?.GetDisplayName() ?? "未知装备",
                 _ => "未知物品",
             };
         }
@@ -181,6 +201,7 @@ namespace EscapeTheTower
                 PickupType.KeySilver => new Color(0.75f, 0.75f, 0.80f),  // 银色
                 PickupType.KeyGold => new Color(0.90f, 0.75f, 0.20f),    // 金色
                 PickupType.GoldPile => new Color(1.0f, 0.85f, 0.0f),     // 亮金色
+                PickupType.Equipment => EquipmentData.GetQualityColor(Quality),
                 _ => Color.white,
             };
         }

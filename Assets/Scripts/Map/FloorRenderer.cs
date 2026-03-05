@@ -19,6 +19,7 @@ namespace EscapeTheTower.Map
         // === Tilemap 引用 ===
         private Tilemap _floorTilemap;
         private Tilemap _wallTilemap;
+        private Tilemap _fogTilemap;  // 迷雾遮罩层
         private Grid _grid;
 
         // === 程序化 Tile 资源（缓存复用） ===
@@ -30,6 +31,8 @@ namespace EscapeTheTower.Map
         private Tile _doorGoldTile;
         private Tile _spawnTile;
         private Tile _stairsTile;
+        private Tile _fogUnseenTile;   // 纯黑迷雾
+        private Tile _fogExploredTile; // 半透明灰（已探索）
 
         // 缓存纹理以便清理（避免内存泄漏）
         private Texture2D[] _cachedTextures;
@@ -114,6 +117,50 @@ namespace EscapeTheTower.Map
         {
             if (_floorTilemap != null) _floorTilemap.ClearAllTiles();
             if (_wallTilemap != null) _wallTilemap.ClearAllTiles();
+            if (_fogTilemap != null) _fogTilemap.ClearAllTiles();
+        }
+
+        // =====================================================================
+        //  迷雾渲染
+        // =====================================================================
+
+        /// <summary>渲染完整迷雾覆盖</summary>
+        public void RenderFog(VisibilityState[,] visMap, int width, int height)
+        {
+            EnsureComponents();
+            CreateTileAssets();
+
+            if (_fogTilemap == null) return;
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    var cellPos = new Vector3Int(x, y, 0);
+                    var state = visMap[x, y];
+                    _fogTilemap.SetTile(cellPos, GetFogTile(state));
+                }
+            }
+        }
+
+        /// <summary>增量更新单个迷雾格子</summary>
+        public void UpdateFogTile(int x, int y, VisibilityState state)
+        {
+            if (_fogTilemap == null) return;
+            var cellPos = new Vector3Int(x, y, 0);
+            _fogTilemap.SetTile(cellPos, GetFogTile(state));
+        }
+
+        /// <summary>根据可见性状态获取迷雾 Tile</summary>
+        private Tile GetFogTile(VisibilityState state)
+        {
+            return state switch
+            {
+                VisibilityState.Unseen => _fogUnseenTile,
+                VisibilityState.Explored => _fogExploredTile,
+                VisibilityState.Visible => null, // 完全透明 = 不放Tile
+                _ => _fogUnseenTile,
+            };
         }
 
         private void OnDestroy()
@@ -173,6 +220,14 @@ namespace EscapeTheTower.Map
             _wallTilemap.tileAnchor = Vector3.zero;
             var wallRenderer = wallObj.AddComponent<TilemapRenderer>();
             wallRenderer.sortingOrder = 1;
+
+            // 迷雾层（最高层，覆盖一切）
+            var fogObj = new GameObject("Fog");
+            fogObj.transform.SetParent(gridObj.transform);
+            _fogTilemap = fogObj.AddComponent<Tilemap>();
+            _fogTilemap.tileAnchor = Vector3.zero;
+            var fogRenderer = fogObj.AddComponent<TilemapRenderer>();
+            fogRenderer.sortingOrder = 10; // 确保覆盖在所有实体之上
         }
 
         /// <summary>程序化创建 Tile 资源并缓存纹理引用</summary>
@@ -180,7 +235,7 @@ namespace EscapeTheTower.Map
         {
             if (_wallTile != null) return;
 
-            _cachedTextures = new Texture2D[8];
+            _cachedTextures = new Texture2D[10]; // 8 + 2 迷雾
 
             _wallTile = MakeTile(new Color(0.15f, 0.12f, 0.2f), 0);       // 深紫灰墙壁
             _floorTile = MakeTile(new Color(0.35f, 0.30f, 0.25f), 1);      // 棕色走廊
@@ -190,6 +245,8 @@ namespace EscapeTheTower.Map
             _doorGoldTile = MakeTile(new Color(0.90f, 0.75f, 0.20f), 5);   // 金色
             _spawnTile = MakeTile(new Color(0.3f, 0.8f, 0.3f), 6);         // 绿色出生点
             _stairsTile = MakeTile(new Color(0.3f, 0.5f, 0.9f), 7);        // 蓝色楼梯
+            _fogUnseenTile = MakeTile(new Color(0f, 0f, 0f, 1f), 8);        // 纯黑迷雾
+            _fogExploredTile = MakeTile(new Color(0f, 0f, 0f, 0.55f), 9);   // 半透明灰迷雾
         }
 
         private Tile MakeTile(Color color, int texIndex)

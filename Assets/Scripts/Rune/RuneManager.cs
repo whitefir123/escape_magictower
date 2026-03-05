@@ -60,12 +60,54 @@ namespace EscapeTheTower.Rune
         // === 当前英雄职业（用于职业专属符文过滤）===
         private HeroClass _currentHeroClass;
 
+        // === 是否已初始化（防止重复订阅）===
+        private bool _isInitialized = false;
+
+        // =====================================================================
+        //  生命周期
+        // =====================================================================
+
+        private void Awake()
+        {
+            // 使用 LogError 确保日志不被过滤 —— 上线前改回 Log
+            Debug.LogError($"[RuneManager] Awake 触发！" +
+                           $" 属性池={attributeRunePool.Count}" +
+                           $" 机制池={mechanismRunePool.Count}" +
+                           $" 专属池={classSpecificRunePool.Count}" +
+                           $" InstanceID={GetInstanceID()}");
+        }
+
+        // =====================================================================
+        //  生命周期：自初始化回退
+        // =====================================================================
+
+        /// <summary>
+        /// 防御性自初始化：如果 GameBootstrapper 未调用 Initialize()，
+        /// 则在 Start() 中自动回退初始化，确保事件订阅和池数据可用
+        /// </summary>
+        private void Start()
+        {
+            if (!_isInitialized)
+            {
+                Debug.LogWarning("[RuneManager] 未通过 GameBootstrapper 初始化，执行自动回退初始化...");
+                Initialize(HeroClass.VagabondSwordsman);
+            }
+        }
+
         // =====================================================================
         //  初始化
         // =====================================================================
 
         public void Initialize(HeroClass heroClass)
         {
+            // 防止重复初始化（GameBootstrapper + Start 双保险）
+            if (_isInitialized)
+            {
+                Debug.Log("[RuneManager] 已初始化，跳过重复调用。");
+                return;
+            }
+            _isInitialized = true;
+
             _currentHeroClass = heroClass;
             AcquiredRunes.Clear();
             _pityCounter = 0;
@@ -74,7 +116,11 @@ namespace EscapeTheTower.Rune
             EventManager.Subscribe<OnEntityKillEvent>(OnEntityKilled);
             EventManager.Subscribe<OnPlayerLevelUpEvent>(OnPlayerLevelUp);
 
-            Debug.Log($"[RuneManager] 初始化完成，职业={_currentHeroClass}");
+            Debug.Log($"[RuneManager] 初始化完成，职业={_currentHeroClass}" +
+                      $" | 属性池={attributeRunePool.Count}" +
+                      $" | 机制池={mechanismRunePool.Count}" +
+                      $" | 专属池={classSpecificRunePool.Count}" +
+                      $" | InstanceID={GetInstanceID()}");
         }
 
         // =====================================================================
@@ -83,9 +129,10 @@ namespace EscapeTheTower.Rune
 
         private void OnEntityKilled(OnEntityKillEvent evt)
         {
-            // 仅响应玩家击杀
             // 40% 概率触发属性符文三选一
-            if (Random.value <= GameConstants.RUNE_DROP_CHANCE)
+            float roll = Random.value;
+            Debug.Log($"[RuneManager] 击杀事件接收！roll={roll:F3} 门槛={GameConstants.RUNE_DROP_CHANCE} 属性池={attributeRunePool.Count}");
+            if (roll <= GameConstants.RUNE_DROP_CHANCE)
             {
                 GenerateAttributeRuneDraft();
             }
@@ -93,6 +140,7 @@ namespace EscapeTheTower.Rune
 
         /// <summary>
         /// 生成属性符文三选一候选
+        /// 两阶段抽取：先按权重roll品质，再从该品质中随机选类型（同类不重复）
         /// </summary>
         private void GenerateAttributeRuneDraft()
         {
@@ -102,24 +150,46 @@ namespace EscapeTheTower.Rune
                 return;
             }
 
-            // Fisher-Yates 部分洗牌：只需打乱前 3 个位置，O(3) 确保不重复
             _currentDraftChoices = new RuneData_SO[3];
-            int poolCount = attributeRunePool.Count;
-            int[] indices = new int[poolCount];
-            for (int i = 0; i < poolCount; i++) indices[i] = i;
+
+            // 已选中的 statBoostType 集合，防止三张卡出现同一属性
+            var usedTypes = new HashSet<StatType>();
 
             for (int i = 0; i < 3; i++)
             {
-                int j = Random.Range(i, poolCount);
-                // 交换
-                (indices[i], indices[j]) = (indices[j], indices[i]);
-                _currentDraftChoices[i] = attributeRunePool[indices[i]];
+                // 第一阶段：按品质权重roll稀有度
+                RuneRarity rolledRarity = RollRarity();
+
+                // 从池中筛选：品质匹配 + 类型不重复
+                var candidates = new List<RuneData_SO>();
+                foreach (var rune in attributeRunePool)
+                {
+                    if (rune.rarity == rolledRarity && !usedTypes.Contains(rune.statBoostType))
+                        candidates.Add(rune);
+                }
+
+                // 如果该品质下所有类型都已被选过，降级到任意品质的未选类型
+                if (candidates.Count == 0)
+                {
+                    foreach (var rune in attributeRunePool)
+                    {
+                        if (!usedTypes.Contains(rune.statBoostType))
+                            candidates.Add(rune);
+                    }
+                }
+
+                if (candidates.Count == 0) break; // 极端情况：池中类型不够3种
+
+                // 第二阶段：从候选中随机选一个
+                var selected = candidates[Random.Range(0, candidates.Count)];
+                _currentDraftChoices[i] = selected;
+                usedTypes.Add(selected.statBoostType);
             }
 
             Debug.Log($"[RuneManager] 属性符文三选一：" +
-                      $"{_currentDraftChoices[0].runeName} | " +
-                      $"{_currentDraftChoices[1].runeName} | " +
-                      $"{_currentDraftChoices[2].runeName}");
+                      $"{FormatRuneChoice(0)} | " +
+                      $"{FormatRuneChoice(1)} | " +
+                      $"{FormatRuneChoice(2)}");
 
             // 暂停游戏，通知 UI 弹出三选一面板
             EventManager.Publish(new OnRuneDraftReadyEvent
@@ -127,6 +197,14 @@ namespace EscapeTheTower.Rune
                 Meta = new EventMeta(0),
                 AcquisitionType = RuneAcquisitionType.KillDrop,
             });
+        }
+
+        /// <summary>格式化符文选项日志（含品质和数值）</summary>
+        private string FormatRuneChoice(int index)
+        {
+            var rune = _currentDraftChoices[index];
+            if (rune == null) return "空";
+            return $"{rune.runeName}[{rune.rarity}]+{rune.statBoostAmount}";
         }
 
         // =====================================================================
@@ -270,10 +348,11 @@ namespace EscapeTheTower.Rune
 
             _currentDraftChoices = null;
 
-            // 通知系统恢复游戏
+            // 通知系统恢复游戏，携带选中的符文数据供英雄注入管线
             EventManager.Publish(new OnRuneDraftCompleteEvent
             {
                 Meta = new EventMeta(0),
+                SelectedRune = selectedRune,
             });
         }
 
@@ -285,10 +364,11 @@ namespace EscapeTheTower.Rune
             _currentDraftChoices = null;
             Debug.Log("[RuneManager] 玩家放弃了本次符文选择。");
 
-            // 通知系统恢复游戏（与 SelectRune 统一发布点）
+            // 通知系统恢复游戏（放弃时 SelectedRune 为 null）
             EventManager.Publish(new OnRuneDraftCompleteEvent
             {
                 Meta = new EventMeta(0),
+                SelectedRune = null,
             });
         }
 

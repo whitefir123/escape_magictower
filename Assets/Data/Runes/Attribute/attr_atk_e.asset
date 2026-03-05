@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d2905ebd48669b499a65699c82bd5c0, type: 3}
+  m_Name: attr_atk_e
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.RuneData_SO
+  runeName: "\u950B\u5229"
+  runeID: attr_atk_e
+  description: "\u76F4\u63A5\u63D0\u5347\u7269\u7406\u653B\u51FB\u529B +10"
+  rarity: 2
+  acquisitionType: 0
+  statBoostType: 4
+  statBoostAmount: 10
+  isClassSpecific: 0
+  restrictedClass: 0
+  effectTag: 
+  currentLevel: 1
+  upgradeDescription: 

@@ -136,6 +136,7 @@ GameObject:
   - component: {fileID: 298509825}
   - component: {fileID: 298509824}
   - component: {fileID: 298509823}
+  - component: {fileID: 298509826}
   m_Layer: 0
   m_Name: Hero
   m_TagString: Player
@@ -352,6 +353,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7e6d7cb2f274b94baf1b9f89d0fe902, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Entity.Hero.HeroSkillHandler
+--- !u!114 &298509826
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 298509816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0c6b238e8163ae46a72e8f1da07f5e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Equipment.HeroEquipmentManager
+  _inventoryCapacity: 150
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -605,7 +619,6 @@ MonoBehaviour:
   mapWidth: 55
   mapHeight: 55
   mapSeed: 0
-  normalMonsterCount: 3
   spawnBoss: 1
 --- !u!4 &657754403
 Transform:
@@ -632,6 +645,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1816756340}
   - component: {fileID: 1816756339}
+  - component: {fileID: 1816756342}
+  - component: {fileID: 1816756341}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -655,7 +670,7 @@ MonoBehaviour:
   _fatigueSystem: {fileID: 0}
   _mapManager: {fileID: 0}
   _monsterSpawner: {fileID: 0}
-  _runeManager: {fileID: 0}
+  _runeManager: {fileID: 1816756342}
   _saveSystem: {fileID: 0}
   _floatingTextManager: {fileID: 0}
   _hudManager: {fileID: 0}
@@ -676,6 +691,117 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1816756341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1816756338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26ee57945fff4a54c8a0d5f9006c7953, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.UI.RuneSelectionPanel
+--- !u!114 &1816756342
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1816756338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8dec4c099f9a9a848aa8925fb881ff0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Rune.RuneManager
+  attributeRunePool:
+  - {fileID: 11400000, guid: 9545e198d8024a2498ab52e8dd17501f, type: 2}
+  - {fileID: 11400000, guid: 2fac6b4f957c29f41af6ed56695f6ac1, type: 2}
+  - {fileID: 11400000, guid: ff08a02bdd26f124eb6124e042b24468, type: 2}
+  - {fileID: 11400000, guid: 5c9825e68eeece940a4d8b61576c2691, type: 2}
+  - {fileID: 11400000, guid: 129ee002ad3a82246827b68006967fb1, type: 2}
+  - {fileID: 11400000, guid: 2b26b5826dd0b404fa4543f06dc88860, type: 2}
+  - {fileID: 11400000, guid: 968a089cd751a5c44b2fcfd280d1311b, type: 2}
+  - {fileID: 11400000, guid: 263f144cb70670e4d931a3afbd491e9f, type: 2}
+  - {fileID: 11400000, guid: 5afb22e2f4340cf49923487560218411, type: 2}
+  - {fileID: 11400000, guid: 9277a2d8b9a5a5d4ea0f3fe6790d353c, type: 2}
+  - {fileID: 11400000, guid: b2592f865a64a744fa8c9ea2b827849a, type: 2}
+  - {fileID: 11400000, guid: 6c29dac273b2dd84eb02867367f83f68, type: 2}
+  - {fileID: 11400000, guid: 47746008f7530c944b43b7c2be5b42aa, type: 2}
+  - {fileID: 11400000, guid: de16209da799bcc4fa9a5bd2d836b60c, type: 2}
+  - {fileID: 11400000, guid: 119f2e25414a5b74cad1bfa31447ee45, type: 2}
+  - {fileID: 11400000, guid: 8eea12b7ef2d85c45a7cda561af09f5f, type: 2}
+  - {fileID: 11400000, guid: 8dedf95523ac6784b82d9ea0e3ae8f52, type: 2}
+  - {fileID: 11400000, guid: f1f3c4d073264ae458eb08975d5a8b15, type: 2}
+  - {fileID: 11400000, guid: 22c4c60f9c298e743b56c84a2c6fef58, type: 2}
+  - {fileID: 11400000, guid: 29e2be9bcbc90264d8e59bf253305a21, type: 2}
+  - {fileID: 11400000, guid: 847d7a9fbd83ba642b5d58d16d84b8af, type: 2}
+  - {fileID: 11400000, guid: 2fe3cbe2b636ebc41ae0c69eb6b3967b, type: 2}
+  - {fileID: 11400000, guid: 73a7c247ef1b2214f9495d95fc8e98e1, type: 2}
+  - {fileID: 11400000, guid: 32bcccfc13c52f04ba1d4a61a24e23a5, type: 2}
+  - {fileID: 11400000, guid: 84ef1480d0c32784bb60b5279423fd04, type: 2}
+  - {fileID: 11400000, guid: e514336cc3e806d418c3d3436dae3276, type: 2}
+  - {fileID: 11400000, guid: d2d29e1d3bb9a064396b68b7938e7b94, type: 2}
+  - {fileID: 11400000, guid: 87df50c0bbe68e04dabbdcb0b16d80b0, type: 2}
+  - {fileID: 11400000, guid: f9c8027c972455440bf332dd079370c0, type: 2}
+  - {fileID: 11400000, guid: 16b449007c980824c8260c6e8d04d759, type: 2}
+  - {fileID: 11400000, guid: 835aec32ae7ba894dbd975cf00cec4f8, type: 2}
+  - {fileID: 11400000, guid: e973ec1107cd61a4f93d749895fa356c, type: 2}
+  - {fileID: 11400000, guid: 0e77962c2bbdfc647a5d14aba576603c, type: 2}
+  - {fileID: 11400000, guid: 9a52682a26045f64eb820624594fb5c0, type: 2}
+  - {fileID: 11400000, guid: 75b63b9098bfe9a40b96d1b81b41e6d0, type: 2}
+  - {fileID: 11400000, guid: 7d537f94683383d40b4d4f093e6c3575, type: 2}
+  - {fileID: 11400000, guid: 4c12451264d62154bbb5ca375de73bf7, type: 2}
+  - {fileID: 11400000, guid: 417f89af25174904bbb1a06d7c56fdc6, type: 2}
+  - {fileID: 11400000, guid: 34b36a1de65adec49baabe290e131c78, type: 2}
+  - {fileID: 11400000, guid: 7aa6e161433c965428c8aa3e996d385a, type: 2}
+  - {fileID: 11400000, guid: 229dbb95c6289ae4591e85b7fdb5b0e4, type: 2}
+  - {fileID: 11400000, guid: 2e30023ff0e51ad42a8292192e4ce5cb, type: 2}
+  - {fileID: 11400000, guid: d006caa1ab81f114bb407d0a43de119b, type: 2}
+  - {fileID: 11400000, guid: 6897893cffd2872409970bf0e17ca397, type: 2}
+  - {fileID: 11400000, guid: 9ccf84a3a53c4be45aa10cac1d27d7d2, type: 2}
+  - {fileID: 11400000, guid: 06dd8c92d2239be459d8306c54a7d5ad, type: 2}
+  - {fileID: 11400000, guid: 094afe4fd1b0a0c4c9469af15950bbf6, type: 2}
+  - {fileID: 11400000, guid: 8a33000f1dd63c34b8a5f373a98ab643, type: 2}
+  - {fileID: 11400000, guid: f28259e74d9b18241909e59890f8135c, type: 2}
+  - {fileID: 11400000, guid: 7e3b1e4f2b14e7c4b87dc413523984f6, type: 2}
+  mechanismRunePool:
+  - {fileID: 11400000, guid: 5a9e84808155c1541b7972aef65afc1e, type: 2}
+  - {fileID: 11400000, guid: 6a821edbefdfe7a44a53e5aeb346d0e6, type: 2}
+  - {fileID: 11400000, guid: de31a25551033dc40b75348f9192219a, type: 2}
+  - {fileID: 11400000, guid: 82116229e673f9948aa9392daa4692a9, type: 2}
+  - {fileID: 11400000, guid: ff53357cbaa22fc4ea1278539ba2be5d, type: 2}
+  - {fileID: 11400000, guid: 1c120b77a23037f438bf78720a437c35, type: 2}
+  - {fileID: 11400000, guid: 019826db2113a114bbd40a3fc3ed5f92, type: 2}
+  - {fileID: 11400000, guid: b603081c3395d8249a42d9aae82cca49, type: 2}
+  - {fileID: 11400000, guid: c15cbd43853e00c42bc0b05d879690e2, type: 2}
+  - {fileID: 11400000, guid: 1faee620f32221649a10b38306043695, type: 2}
+  - {fileID: 11400000, guid: 68752894b3cf5284ebff5d3ad3c2d151, type: 2}
+  - {fileID: 11400000, guid: 00228957454784d49b6be5f856c5b903, type: 2}
+  - {fileID: 11400000, guid: 0e3c92166120eb24dae1f8ca9e8170b8, type: 2}
+  - {fileID: 11400000, guid: 70680dc51de42cd4fafd4bc9e0580179, type: 2}
+  - {fileID: 11400000, guid: 5e0e7857bb7e0a14fb7b8fb50d680766, type: 2}
+  - {fileID: 11400000, guid: 1a60615448383e140b312fe904cd48ff, type: 2}
+  - {fileID: 11400000, guid: cb1dec95696de3e46a9a8a0bf73864d3, type: 2}
+  - {fileID: 11400000, guid: 006b0ef52ce6a4c499efe48c4fd765fa, type: 2}
+  - {fileID: 11400000, guid: fe885ecf6aa73fb469ec4c2ff2e1b3eb, type: 2}
+  - {fileID: 11400000, guid: 99d0c012658051c4a862f06512210e3e, type: 2}
+  - {fileID: 11400000, guid: 7c86d55852e03d64eae5ba166ba2931e, type: 2}
+  - {fileID: 11400000, guid: 1ba540885a1eb1a45a4ab3d0902b7ed3, type: 2}
+  - {fileID: 11400000, guid: 41df09bfc75caef45a281a1023ff48a2, type: 2}
+  - {fileID: 11400000, guid: c533a3bc7b4e2874aa28eb51bea0021b, type: 2}
+  - {fileID: 11400000, guid: 794a6578213432e4c95763a7851cf881, type: 2}
+  - {fileID: 11400000, guid: d2d93746451b65b4c903a4c03d5cecea, type: 2}
+  classSpecificRunePool:
+  - {fileID: 11400000, guid: 10e3009fe979de9448532f63f40a8185, type: 2}
+  - {fileID: 11400000, guid: 53d08ea3ae1709c4b9f46c0a3bba2179, type: 2}
+  - {fileID: 11400000, guid: 58d1aed2d2cc72b4eaadaba86e55e7f8, type: 2}
+  - {fileID: 11400000, guid: 81e76de5d3ac3934da400c7530b9580b, type: 2}
+  - {fileID: 11400000, guid: 8899b5b358c5a1a438c6efe33bfd115e, type: 2}
+  - {fileID: 11400000, guid: 0c754776da777144a95d948cec9d8a03, type: 2}
+  - {fileID: 11400000, guid: c492aa6f1823e7e4ebfc68bc1a3b0303, type: 2}
+  - {fileID: 11400000, guid: 59829ab440c355942bc40187a937c879, type: 2}
 --- !u!1 &1981157760
 GameObject:
   m_ObjectHideFlags: 0

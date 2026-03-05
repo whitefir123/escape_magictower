@@ -46,11 +46,11 @@ namespace EscapeTheTower.UI
         {
             switch (rarity)
             {
-                case RuneRarity.Common:      return new Color(0.7f, 0.7f, 0.7f);    // 灰白
-                case RuneRarity.Rare:        return new Color(0.2f, 0.6f, 1.0f);    // 蓝色
-                case RuneRarity.Exceptional: return new Color(0.6f, 0.2f, 0.9f);    // 紫色
-                case RuneRarity.Epic:        return new Color(1.0f, 0.65f, 0.0f);   // 橙色
-                case RuneRarity.Legendary:   return new Color(1.0f, 0.85f, 0.0f);   // 金色
+                case RuneRarity.Common:      return new Color(0.85f, 0.85f, 0.85f); // 白色
+                case RuneRarity.Rare:        return new Color(0.2f, 0.8f, 0.2f);    // 绿色
+                case RuneRarity.Exceptional: return new Color(0.2f, 0.6f, 1.0f);    // 蓝色
+                case RuneRarity.Epic:        return new Color(0.7f, 0.3f, 0.9f);    // 紫色
+                case RuneRarity.Legendary:   return new Color(1.0f, 0.6f, 0.0f);    // 橙色
                 case RuneRarity.Cursed:      return new Color(0.8f, 0.0f, 0.2f);    // 暗红
                 default:                     return Color.white;
             }
@@ -77,13 +77,23 @@ namespace EscapeTheTower.UI
         //  生命周期
         // =====================================================================
 
-        private void Start()
-        {
-            BuildUI();
-            _panelRoot.SetActive(false);
+        // Awake 中不做 UI 构建（可能在 DontDestroyOnLoad 生效前被场景加载销毁）
+        // 所有初始化统一由 GameBootstrapper 在 Awake 阶段调用 Initialize()
 
-            // 订阅符文三选一就绪事件
+        /// <summary>
+        /// 构建 UI + 订阅事件 —— 由 GameBootstrapper 在 EventManager.ClearAll() 之后调用
+        /// </summary>
+        public void Initialize()
+        {
+            // 防止重复构建
+            if (_headerText == null)
+            {
+                BuildUI();
+                _panelRoot.SetActive(false);
+            }
+
             EventManager.Subscribe<OnRuneDraftReadyEvent>(OnDraftReady);
+            Debug.Log($"[RuneSelectionPanel] UI 已构建，事件已订阅。_headerText={(_headerText != null ? "OK" : "NULL")}");
         }
 
         private void OnDestroy()
@@ -106,14 +116,15 @@ namespace EscapeTheTower.UI
 
         private void BuildUI()
         {
-            // --- Canvas ---
+            // --- Canvas（必须为根级对象，ScreenSpaceOverlay 不支持非 Canvas 父级）---
             var canvasObj = new GameObject("RuneSelectionCanvas");
-            canvasObj.transform.SetParent(transform);
+            DontDestroyOnLoad(canvasObj); // 独立于场景生命周期
             _canvas = canvasObj.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             _canvas.sortingOrder = 100; // 确保在最顶层
-            canvasObj.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasObj.GetComponent<CanvasScaler>().referenceResolution = new Vector2(1920, 1080);
+            var scaler = canvasObj.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
             canvasObj.AddComponent<GraphicRaycaster>();
 
             // --- 半透明背景遮罩 ---

@@ -89,9 +89,9 @@ namespace EscapeTheTower
         public static float CLASS_RUNE_FORCE_CHANCE => _config != null ? _config.classRuneForceChance : 0.10f;
 
         // === 符文稀有度权重 ===
-        public static float RUNE_WEIGHT_COMMON => _config != null ? _config.runeWeightCommon : 0.55f;
-        public static float RUNE_WEIGHT_RARE => _config != null ? _config.runeWeightRare : 0.30f;
-        public static float RUNE_WEIGHT_EXCEPTIONAL => _config != null ? _config.runeWeightExceptional : 0.11f;
+        public static float RUNE_WEIGHT_COMMON => _config != null ? _config.runeWeightCommon : 0.65f;
+        public static float RUNE_WEIGHT_RARE => _config != null ? _config.runeWeightRare : 0.25f;
+        public static float RUNE_WEIGHT_EXCEPTIONAL => _config != null ? _config.runeWeightExceptional : 0.06f;
         public static float RUNE_WEIGHT_EPIC => _config != null ? _config.runeWeightEpic : 0.035f;
         public static float RUNE_WEIGHT_LEGENDARY => _config != null ? _config.runeWeightLegendary : 0.005f;
 

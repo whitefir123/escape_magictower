@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d2905ebd48669b499a65699c82bd5c0, type: 3}
+  m_Name: mech_ep_glasscannon
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.RuneData_SO
+  runeName: "\u73BB\u7483\u5927\u70AE"
+  runeID: mech_ep_glasscannon
+  description: "\u53CC\u653B\u6C38\u4E45 +50 \u70B9\u56FA\u5B9A\u52A0\u6210\uFF0C\u4F46\u53CC\u9632\u6C38\u4E45\u9501\u5B9A\u4E3A
+    0\u3002\n[\u91CD\u590D\u83B7\u53D6\u5347\u7EA7] \u6BCF\u5347 1 \u7EA7\uFF0C\u53CC\u653B\u518D
+    +30 \u70B9\u3002"
+  rarity: 3
+  acquisitionType: 1
+  statBoostType: 0
+  statBoostAmount: 0
+  isClassSpecific: 0
+  restrictedClass: 0
+  effectTag: "\u6781\u7AEF\u653B\u51FB"
+  currentLevel: 1
+  upgradeDescription: "\u6BCF\u7EA7 +30 \u53CC\u653B"

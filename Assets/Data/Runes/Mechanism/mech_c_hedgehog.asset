@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d2905ebd48669b499a65699c82bd5c0, type: 3}
+  m_Name: mech_c_hedgehog
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.RuneData_SO
+  runeName: "\u523A\u732C\u5916\u58F3"
+  runeID: mech_c_hedgehog
+  description: "\u88AB\u8FD1\u6218\u602A\u7269\u653B\u51FB\u65F6\uFF0C\u7ACB\u5373\u5BF9\u524D\u65B9\u53CD\u51FB
+    1 \u70B9\u4E0D\u53EF\u8C41\u514D\u7684\u771F\u5B9E\u7269\u7406\u9632\u536B\u4F24\u5BB3\u3002\n[\u91CD\u590D\u83B7\u53D6\u5347\u7EA7]
+    \u6BCF\u5347 1 \u7EA7\uFF0C\u53CD\u5F39\u771F\u4F24 +2 \u70B9\u3002"
+  rarity: 0
+  acquisitionType: 1
+  statBoostType: 0
+  statBoostAmount: 0
+  isClassSpecific: 0
+  restrictedClass: 0
+  effectTag: "\u53CD\u4F24"
+  currentLevel: 1
+  upgradeDescription: "\u6BCF\u7EA7 +2 \u771F\u4F24"

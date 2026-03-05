@@ -208,5 +208,54 @@ namespace EscapeTheTower.Tests
                 }, $"种子 {seed} 生成抛出异常");
             }
         }
+
+        // =====================================================================
+        //  出生房出口验证
+        // =====================================================================
+
+        [Test]
+        public void Generate_出生房至少3个出口()
+        {
+            var grid = GenerateTestMap();
+            Assert.GreaterOrEqual(grid.Rooms.Count, 1, "至少应有 1 个房间");
+            var spawnRoom = grid.Rooms[0];
+            Assert.GreaterOrEqual(spawnRoom.Entrances.Count, 3,
+                $"出生房应至少有 3 个出口，实际={spawnRoom.Entrances.Count}");
+        }
+
+        [Test]
+        public void Generate_出生房出口均为Floor()
+        {
+            var grid = GenerateTestMap();
+            Assert.GreaterOrEqual(grid.Rooms.Count, 1, "至少应有 1 个房间");
+            var spawnRoom = grid.Rooms[0];
+
+            foreach (var entrance in spawnRoom.Entrances)
+            {
+                var tile = grid.Tiles[entrance.x, entrance.y];
+                Assert.AreNotEqual(TileType.DoorBronze, tile,
+                    $"出生房出口({entrance.x},{entrance.y})不应有铜门");
+                Assert.AreNotEqual(TileType.DoorSilver, tile,
+                    $"出生房出口({entrance.x},{entrance.y})不应有银门");
+                Assert.AreNotEqual(TileType.DoorGold, tile,
+                    $"出生房出口({entrance.x},{entrance.y})不应有金门");
+            }
+        }
+
+        [Test]
+        public void Generate_20个随机种子出生房均至少3出口()
+        {
+            var rng = new System.Random(99);
+            for (int i = 0; i < 20; i++)
+            {
+                int seed = rng.Next();
+                var grid = FloorGenerator.Generate(MAP_WIDTH, MAP_HEIGHT, seed);
+                if (grid.Rooms.Count == 0) continue; // 极端情况跳过
+
+                var spawnRoom = grid.Rooms[0];
+                Assert.GreaterOrEqual(spawnRoom.Entrances.Count, 3,
+                    $"种子 {seed}：出生房出口={spawnRoom.Entrances.Count}，应≥3");
+            }
+        }
     }
 }

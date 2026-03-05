@@ -623,8 +623,20 @@ namespace EscapeTheTower.Entity.Monster
 
                 Debug.Log($"[掉落] {monsterName} → EXP={finalExp}, 金币={gold}");
 
-                // 钥匙掉落（规则来源：09_Consumable_and_Drop_Items.md §4）
-                RollKeyDrop(monsterName);
+                // 消耗品 + 钥匙 + 装备掉落（来源：09_Consumable_and_Drop_Items.md §4）
+                bool isBoss = Tags.HasFlag(MonsterTag.Boss);
+                var dropTier = isBoss
+                    ? Data.LootTableHelper.MonsterDropTier.Boss
+                    : IsElite
+                        ? Data.LootTableHelper.MonsterDropTier.Elite
+                        : Data.LootTableHelper.MonsterDropTier.Normal;
+
+                var gridMov = GetComponent<GridMovement>();
+                var deathPos = gridMov != null ? gridMov.GridPosition
+                    : GridMovement.WorldToGrid(transform.position);
+                var dropRng = new System.Random(
+                    deathPos.x * 1000 + deathPos.y + System.Environment.TickCount);
+                Data.LootTableHelper.GenerateMonsterDrop(deathPos, dropTier, dropRng);
             }
 
             // 广播事件

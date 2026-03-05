@@ -25,9 +25,6 @@ namespace EscapeTheTower.DevTools
         [Tooltip("随机种子（0 = 随机）")]
         [SerializeField] private int mapSeed = 0;
 
-        [Header("=== 怪物配置 ===")]
-        [Tooltip("生成的普通怪物数量")]
-        [SerializeField] private int normalMonsterCount = 3;
 
         [Tooltip("是否生成 Boss")]
         [SerializeField] private bool spawnBoss = true;
@@ -49,14 +46,21 @@ namespace EscapeTheTower.DevTools
                 SetPrivateField(ftm, "mapWidth", mapWidth);
                 SetPrivateField(ftm, "mapHeight", mapHeight);
                 SetPrivateField(ftm, "baseSeed", mapSeed);
-                SetPrivateField(ftm, "normalMonsterCount", normalMonsterCount);
+
                 SetPrivateField(ftm, "spawnBoss", spawnBoss);
             }
 
             // 2. 设置摄像机跟随
             SetupCameraFollow();
 
-            // 3. 初始化首层
+            // 3. 部署装备系统引导器（必须在 InitializeFirstFloor 之前，否则收不到 OnFloorTransitionEvent）
+            if (EquipmentSystemBootstrap.Instance == null)
+            {
+                var eqBootObj = new GameObject("EquipmentSystemBootstrap");
+                eqBootObj.AddComponent<EquipmentSystemBootstrap>();
+            }
+
+            // 4. 初始化首层
             FloorTransitionManager.Instance.InitializeFirstFloor();
 
             // 4. 摄像机跟随玩家
@@ -68,11 +72,18 @@ namespace EscapeTheTower.DevTools
                 follow?.SetTarget(hero.transform);
             }
 
-            // 5. 部署 HUD
+            // 6. 部署 HUD
             if (FindAnyObjectByType<EscapeTheTower.UI.HUDManager>() == null)
             {
                 var hudObj = new GameObject("HUDManager");
                 hudObj.AddComponent<EscapeTheTower.UI.HUDManager>();
+            }
+
+            // 7. 部署装备面板 UI
+            if (FindAnyObjectByType<EscapeTheTower.UI.EquipmentPanelUI>() == null)
+            {
+                var equipPanelObj = new GameObject("EquipmentPanelUI");
+                equipPanelObj.AddComponent<EscapeTheTower.UI.EquipmentPanelUI>();
             }
 
             Debug.Log("──────────────────────────────────────");

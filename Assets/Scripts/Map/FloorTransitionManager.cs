@@ -37,9 +37,6 @@ namespace EscapeTheTower.Map
         [SerializeField] private int baseSeed = 0;
 
         [Header("=== 怪物配置 ===")]
-        [Tooltip("每层生成的普通怪物数量")]
-        [SerializeField] private int normalMonsterCount = 3;
-
         [Tooltip("是否生成 Boss")]
         [SerializeField] private bool spawnBoss = true;
 
@@ -138,6 +135,14 @@ namespace EscapeTheTower.Map
             // ── 12. 传送英雄到新出生点 ──
             TeleportHeroToSpawn();
 
+            // ── 12.5 初始化战争迷雾并揭示出生区域 ──
+            var fogMgr = FogOfWarManager.Instance;
+            if (fogMgr != null)
+            {
+                fogMgr.Initialize(CurrentFloorGrid, _floorRenderer);
+                fogMgr.OnPlayerMoved(CurrentFloorGrid.SpawnPoint);
+            }
+
             // ── 13. 锁定新楼梯 ──
             LockStaircase();
 
@@ -234,6 +239,13 @@ namespace EscapeTheTower.Map
                 var obj = new GameObject("PickupManager");
                 obj.AddComponent<PickupManager>();
             }
+
+            // 战争迷雾
+            if (FogOfWarManager.Instance == null)
+            {
+                var obj = new GameObject("FogOfWarManager");
+                obj.AddComponent<FogOfWarManager>();
+            }
         }
 
         // =====================================================================
@@ -287,33 +299,26 @@ namespace EscapeTheTower.Map
             var bossData = Floor1MonsterRegistry.GetBossData();
             var tracker = RoomTracker.Instance;
 
-            int monstersSpawned = 0;
+            // 使用楼层种子驱动的随机数（保证同种子可复现）
+            var rng = new System.Random(_resolvedBaseSeed + CurrentFloorLevel * 1000 + 7);
+
+            // 精英突变概率：基础5% + 每层+5%
+            // 来源：GameData_Blueprints/04_01_Monster_Spawn_Logic.md §二
+            float eliteChance = 0.05f + 0.05f * (CurrentFloorLevel - 1);
+
+            int totalMonstersSpawned = 0;
 
             foreach (var room in CurrentFloorGrid.Rooms)
             {
                 // 出生房间不放怪物
                 if (room.Center == CurrentFloorGrid.SpawnPoint) continue;
 
-                // 战斗房生成怪物
-                if (room.Type == RoomType.Combat && monstersSpawned < normalMonsterCount)
-                {
-                    var monsterData = registry[monstersSpawned % registry.Length];
-                    Vector3 pos = new Vector3(room.Center.x, room.Center.y, 0f);
-                    var monsterObj = SpawnMonster(monsterData, pos,
-                        $"怪物_{monsterData.entityName}_{room.RoomID}");
-
-                    var monster = monsterObj.GetComponent<MonsterBase>();
-                    monster.PatrolOrigin = room.Center;
-                    tracker?.RegisterMonster(room.RoomID, monster);
-                    monstersSpawned++;
-                }
-
-                // Boss 生成在楼梯附近（而非 Boss 房中心）
+                // Boss 房：生成 Boss 在楼梯附近
                 if (room.Type == RoomType.Boss && spawnBoss && bossData != null)
                 {
                     var stairsPos = CurrentFloorGrid.StairsPoint;
                     Vector3 bossPos = new Vector3(stairsPos.x, stairsPos.y, 0f);
-                    var bossObj = SpawnMonster(bossData, bossPos, "Boss_堕落勇士");
+                    var bossObj = SpawnMonster(bossData, bossPos, "Boss_堕落勇士", rng, false, 1f);
                     bossObj.transform.localScale = Vector3.one * 1.5f;
                     bossObj.AddComponent<FallenHeroBossAI>();
 
@@ -321,15 +326,69 @@ namespace EscapeTheTower.Map
                     bossMon.PatrolOrigin = stairsPos;
                     bossMon.PatrolRadius = 4;
                     tracker?.RegisterMonster(room.RoomID, bossMon);
+                    continue;
+                }
+
+                // 战斗房按面积密度生成怪物
+                if (room.Type != RoomType.Combat) continue;
+
+                // 怪物数量 = clamp(floor(面积 / 15), 1, 5)
+                int roomArea = room.Bounds.width * room.Bounds.height;
+                int monsterCount = Mathf.Clamp(roomArea / 15, 1, 5);
+
+                // 收集房间内可用的 RoomFloor 格子（排除中心 ±1 格避免重叠）
+                var availablePositions = new System.Collections.Generic.List<Vector2Int>();
+                for (int x = room.Bounds.x; x < room.Bounds.xMax; x++)
+                {
+                    for (int y = room.Bounds.y; y < room.Bounds.yMax; y++)
+                    {
+                        if (CurrentFloorGrid.Tiles[x, y] == TileType.RoomFloor)
+                        {
+                            availablePositions.Add(new Vector2Int(x, y));
+                        }
+                    }
+                }
+
+                // Fisher-Yates 洗牌后取前 N 个位置
+                for (int i = availablePositions.Count - 1; i > 0; i--)
+                {
+                    int j = rng.Next(i + 1);
+                    (availablePositions[i], availablePositions[j]) = (availablePositions[j], availablePositions[i]);
+                }
+
+                for (int m = 0; m < monsterCount && m < availablePositions.Count; m++)
+                {
+                    // 随机选择怪物类型
+                    var monsterData = registry[rng.Next(registry.Length)];
+                    var spawnPos = availablePositions[m];
+                    Vector3 pos = new Vector3(spawnPos.x, spawnPos.y, 0f);
+
+                    // 精英突变检定
+                    // 来源：04_01_Monster_Spawn_Logic.md §二
+                    // 概率=5%+5%*(层数-1)，属性倍率3~5x，体积1.5x
+                    bool isElite = rng.NextDouble() < eliteChance;
+                    float eliteMult = isElite ? (3f + (float)rng.NextDouble() * 2f) : 1f;
+
+                    string eliteTag = isElite ? "精英" : "";
+                    var monsterObj = SpawnMonster(monsterData, pos,
+                        $"怪物_{eliteTag}{monsterData.entityName}_{room.RoomID}_{m}",
+                        rng, isElite, eliteMult);
+
+                    var monster = monsterObj.GetComponent<MonsterBase>();
+                    monster.PatrolOrigin = room.Center;
+                    tracker?.RegisterMonster(room.RoomID, monster);
+                    totalMonstersSpawned++;
                 }
             }
 
-            Debug.Log($"[FloorTransition] 已生成 {monstersSpawned} 只普通怪物" +
+            Debug.Log($"[FloorTransition] 第{CurrentFloorLevel}层 已生成 {totalMonstersSpawned} 只怪物" +
+                $"（精英概率={eliteChance:P0}）" +
                 (spawnBoss ? " + Boss" : ""));
         }
 
         /// <summary>生成单只怪物</summary>
-        private GameObject SpawnMonster(MonsterData_SO data, Vector3 position, string name)
+        private GameObject SpawnMonster(MonsterData_SO data, Vector3 position, string name,
+            System.Random rng, bool isElite, float eliteMult)
         {
             var obj = new GameObject(name);
             obj.transform.position = position;
@@ -345,10 +404,25 @@ namespace EscapeTheTower.Map
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             entityDataField?.SetValue(monster, data);
 
-            // 距离系数和楼层传入
-            float distanceFactor = 0.5f;
-            monster.Initialize(distanceFactor, CurrentFloorLevel, false, 1f);
+            // 同心圆距离系数（来源：04_01_Monster_Spawn_Logic.md §一）
+            // 距出生点越远 → distanceFactor 越接近1.0 → 属性越偏向 Max 值
+            float distanceFactor = CalculateDistanceFactor(position);
+            monster.Initialize(distanceFactor, CurrentFloorLevel, isElite, eliteMult);
             return obj;
+        }
+
+        /// <summary>
+        /// 计算同心圆距离系数 [0, 1]
+        /// 来源：GameData_Blueprints/04_01_Monster_Spawn_Logic.md §一
+        /// </summary>
+        private float CalculateDistanceFactor(Vector3 monsterPos)
+        {
+            if (CurrentFloorGrid == null) return 0.5f;
+
+            var spawn = CurrentFloorGrid.SpawnPoint;
+            float dist = Mathf.Abs(monsterPos.x - spawn.x) + Mathf.Abs(monsterPos.y - spawn.y);
+            float maxDist = CurrentFloorGrid.Width + CurrentFloorGrid.Height; // 理论最大曼哈顿距离
+            return Mathf.Clamp01(dist / Mathf.Max(1f, maxDist * 0.5f)); // 归一化到 [0,1]
         }
 
         // =====================================================================

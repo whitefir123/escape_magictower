@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d2905ebd48669b499a65699c82bd5c0, type: 3}
+  m_Name: attr_cdr_c
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.RuneData_SO
+  runeName: "\u7075\u5149"
+  runeID: attr_cdr_c
+  description: "\u63D0\u5347\u5404\u7C7B\u6280\u80FD\u51B7\u5374\u7F29\u51CF +0.005"
+  rarity: 0
+  acquisitionType: 0
+  statBoostType: 16
+  statBoostAmount: 0.005
+  isClassSpecific: 0
+  restrictedClass: 0
+  effectTag: 
+  currentLevel: 1
+  upgradeDescription: 

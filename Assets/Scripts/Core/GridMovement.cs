@@ -107,6 +107,12 @@ namespace EscapeTheTower.Core
         private float _postKillDelay;
         private const float POST_KILL_DELAY_DURATION = 0.15f;
 
+        // === 碰撞去重（防止门/宝箱/怪物交互高频重复触发） ===
+        // 记住上次碰撞的目标格，同格冷却期内不重复触发事件
+        private Vector2Int _lastBlockedTile = new(-999, -999);
+        private float _blockCooldownTimer;
+        private const float BLOCK_COOLDOWN = 0.4f; // 同目标碰撞事件冷却（秒）
+
         // =====================================================================
         //  静态实例注册表
         //  替代每次 FindObjectsByType 的全量遍历 → 直接查 HashSet
@@ -232,6 +238,10 @@ namespace EscapeTheTower.Core
                 }
             }
 
+            // 碰撞去重冷却递减
+            if (_blockCooldownTimer > 0f)
+                _blockCooldownTimer -= dt;
+
             // 击杀延迟保护
             if (_postKillDelay > 0f)
             {
@@ -284,6 +294,12 @@ namespace EscapeTheTower.Core
         {
             Vector2Int targetGrid = GridPosition + direction;
 
+            // 碰撞去重：如果目标格改变了，重置冷却
+            if (targetGrid != _lastBlockedTile)
+            {
+                _blockCooldownTimer = 0f;
+            }
+
             GameObject blocker = CheckTileOccupant(targetGrid);
 
             if (blocker != null)
@@ -294,15 +310,31 @@ namespace EscapeTheTower.Core
                 {
                     StartBump(direction, targetGrid, blocker);
                 }
-                // 不回弹时视为墙壁，不移动不触发事件
+                else if (_blockCooldownTimer <= 0f)
+                {
+                    // 不可回弹的占据者（攻击冷却中等）→ 仅在冷却结束后触发一次事件
+                    _lastBlockedTile = targetGrid;
+                    _blockCooldownTimer = BLOCK_COOLDOWN;
+                    OnMoveBlocked?.Invoke(targetGrid, blocker);
+                }
+                // 冷却中不触发事件，避免高频重复
             }
             else if (IsTileWall(targetGrid))
             {
                 // 墙壁 → 不移动，但通知订阅者（用于门交互）
-                OnWallBlocked?.Invoke(targetGrid);
+                // 去重：同一面墙在冷却期内不重复通知
+                if (_blockCooldownTimer <= 0f)
+                {
+                    _lastBlockedTile = targetGrid;
+                    _blockCooldownTimer = BLOCK_COOLDOWN;
+                    OnWallBlocked?.Invoke(targetGrid);
+                }
             }
             else
             {
+                // 成功移动 → 清除碰撞记忆
+                _lastBlockedTile = new Vector2Int(-999, -999);
+                _blockCooldownTimer = 0f;
                 StartMove(targetGrid);
             }
         }

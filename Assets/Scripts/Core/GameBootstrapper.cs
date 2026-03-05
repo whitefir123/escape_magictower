@@ -80,15 +80,27 @@ namespace EscapeTheTower.Core
             EnsureAndRegister(ref _runeSelectionPanel);
 
             Debug.Log("[GameBootstrapper] 核心服务初始化完成！共注册 10 个服务。");
+
+            // 在 Awake 阶段（ClearAll 之后、场景加载之前）立即初始化符文系统
+            // 不能放在 Start/StartNewRun 中，因为场景加载会跳过 DontDestroyOnLoad 对象的 Start()
+            _runeManager.Initialize(HeroClass.VagabondSwordsman);
+            _runeSelectionPanel.Initialize();
         }
 
         /// <summary>
         /// 确保组件存在并注册到 ServiceLocator
+        /// 查找策略：Inspector 引用 → 场景中已有实例 → 自动创建
         /// </summary>
         private void EnsureAndRegister<T>(ref T component) where T : MonoBehaviour
         {
             if (component == null)
             {
+                // Inspector 未赋值时，先尝试在场景中查找已存在的实例（如编辑器工具预创建的）
+                component = FindAnyObjectByType<T>();
+            }
+            if (component == null)
+            {
+                // 场景中也不存在，则自动挂载到当前 GameObject
                 component = gameObject.AddComponent<T>();
             }
             ServiceLocator.Register(component);
@@ -104,8 +116,7 @@ namespace EscapeTheTower.Core
             // 创建新存档
             _saveSystem.CreateNewSave("vagabond_swordsman");
 
-            // 初始化符文系统
-            _runeManager.Initialize(HeroClass.VagabondSwordsman);
+            // 符文系统已在 InitializeCoreServices 末尾完成初始化（Awake阶段）
 
             // 初始化地图（第一层暗黑地牢）
             _mapManager.StartNewRun();
