@@ -122,8 +122,8 @@ namespace EscapeTheTower.Map
 
             if (CurrentFloor > 9)
             {
-                Debug.Log("[MapManager] 第 9 层通关！触发轮回。");
-                // TODO: 触发轮回/胜利事件
+                Debug.Log("[MapManager] 第 9 层通关！触发胜利事件。");
+                EventManager.Publish(new OnVictoryEvent { Meta = new EventMeta(0) });
                 return;
             }
 

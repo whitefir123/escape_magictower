@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_FallenHero_Boss
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u5815\u843D\u7684\u4EBA\u578B\u52C7\u58EB"
+  entityID: fallen_hero
+  baseMaxHP: 1200
+  baseMaxMP: 0
+  baseATK: 25
+  baseMATK: 0
+  baseDEF: 25
+  baseMDEF: 10
+  baseCritRate: 0
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 1
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 132616
+  maxHP_Max: 2800
+  maxATK_Max: 60
+  maxMATK_Max: 0
+  maxDEF_Max: 55
+  maxMDEF_Max: 25
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 1.5
+  moveSpeedDescription: 
+  baseExpReward: 150
+  goldDropMin: 50
+  goldDropMax: 100
+  mechanicDescription: "\u66FE\u7ECF\u8BD5\u56FE\u6311\u6218\u9B54\u5854\u4F46\u88AB\u8150\u5316\u7684\u524D\u8F88\u5251\u58EB\u3002\u52C7\u8005\u51B2\u950B(\u76F4\u7EBF+\u51FB\u9000+\u7729\u6655)
+    + 50%\u8840\u91CF\u5904\u51B3\u5927\u98CE\u8F66(\u9738\u4F53+\u6301\u7EEDAOE)"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 1
+  hasPermUnstoppable: 0

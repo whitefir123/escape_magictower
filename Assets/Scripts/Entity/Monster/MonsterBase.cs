@@ -84,8 +84,7 @@ namespace EscapeTheTower.Entity.Monster
         private float _attackCooldownTimer;
         private float _attackInterval = 1.5f; // 默认攻击间隔（秒），Initialize 中会覆盖
 
-        // === 格子移动 ===
-        private GridMovement _gridMovement;
+        // === 格子移动（使用基类 EntityBase._gridMovement） ===
         private float _pursuitMoveTimer; // 怪物移动节拍计时器
 
         // === 战斗疲劳 ===
@@ -106,6 +105,9 @@ namespace EscapeTheTower.Entity.Monster
         //  生命周期
         // =====================================================================
 
+        // === 疲劳系统引用 ===
+        private FatigueSystem _fatigueSystem;
+
         protected override void Awake()
         {
             base.Awake();
@@ -114,6 +116,9 @@ namespace EscapeTheTower.Entity.Monster
                 entityData = monsterData;
             }
             Faction = Faction.Enemy;
+
+            // 缓存疲劳系统引用
+            _fatigueSystem = FindAnyObjectByType<FatigueSystem>();
 
             EnsureVisualAndGrid();
         }
@@ -167,8 +172,10 @@ namespace EscapeTheTower.Entity.Monster
             return _sharedPlaceholderSprite;
         }
 
-        private void Update()
+        protected override void Update()
         {
+            base.Update(); // 驱动 EntityBase.DOT 定时器
+
             if (!IsAlive)
             {
                 AIState = MonsterAIState.Dead;
@@ -226,6 +233,12 @@ namespace EscapeTheTower.Entity.Monster
                       $" HP={CurrentStats.Get(StatType.MaxHP):F0}" +
                       $" ATK={CurrentStats.Get(StatType.ATK):F0}" +
                       (IsElite ? " 【精英】" : ""));
+
+            // 设置状态免疫
+            if (monsterData.immuneToEffects != null && StatusEffects != null)
+            {
+                StatusEffects.SetImmunities(monsterData.immuneToEffects);
+            }
         }
 
         /// <summary>
@@ -410,9 +423,9 @@ namespace EscapeTheTower.Entity.Monster
         }
 
 
-
         /// <summary>
         /// 执行主动攻击
+        /// 疲劳系统加成：攻击力乘区 + 穿甲追加
         /// </summary>
         private void PerformAttack()
         {
@@ -421,19 +434,30 @@ namespace EscapeTheTower.Entity.Monster
             var targetEntity = _pursuitTarget.GetComponent<EntityBase>();
             if (targetEntity == null || !targetEntity.IsAlive) return;
 
+            // 疲劳加成
+            float fatigueMult = _fatigueSystem != null ? _fatigueSystem.GetAtkMultiplier() : 1f;
+            float fatiguePen = _fatigueSystem != null ? _fatigueSystem.GetPenBonus() : 0f;
+
+            // 临时叠加穿甲到攻击属性快照中（不修改 CurrentStats）
+            var atkStats = fatiguePen > 0f ? new StatBlock(CurrentStats) : CurrentStats;
+            if (fatiguePen > 0f) atkStats.Add(StatType.ArmorPen, fatiguePen);
+
             var damageResult = DamageCalculator.Calculate(
-                CurrentStats,
+                atkStats,
                 targetEntity.CurrentStats,
                 baseDamage: 0f,
                 atkScaling: 1.0f,      // 100% ATK
-                damageType: DamageType.Physical
+                damageType: DamageType.Physical,
+                bonusMultiplier: fatigueMult
             );
 
             // 闪避检测
             if (!DamageCalculator.CheckDodge(targetEntity.CurrentStats))
             {
                 targetEntity.TakeDamage(damageResult, EntityID);
-                Debug.Log($"[战斗] {gameObject.name} 主动攻击！伤害={damageResult.FinalDamage:F1}");
+                ApplyOnHitEffects(targetEntity); // 攻击附带状态效果
+                Debug.Log($"[战斗] {gameObject.name} 主动攻击！伤害={damageResult.FinalDamage:F1}" +
+                          $" 疲劳倍率={fatigueMult:F2}");
             }
         }
 
@@ -484,18 +508,27 @@ namespace EscapeTheTower.Entity.Monster
             // 先进入追击状态（确保 _pursuitTarget 已设置）
             EngageTarget(player.transform);
 
+            // 疲劳加成
+            float fatigueMult = _fatigueSystem != null ? _fatigueSystem.GetAtkMultiplier() : 1f;
+            float fatiguePen = _fatigueSystem != null ? _fatigueSystem.GetPenBonus() : 0f;
+
+            var atkStats = fatiguePen > 0f ? new StatBlock(CurrentStats) : CurrentStats;
+            if (fatiguePen > 0f) atkStats.Add(StatType.ArmorPen, fatiguePen);
+
             // 被动反击：无视攻击间隔，立即打一次
             var counterDamage = DamageCalculator.Calculate(
-                CurrentStats,
+                atkStats,
                 player.CurrentStats,
                 baseDamage: 0f,
                 atkScaling: 1.0f,
-                damageType: DamageType.Physical
+                damageType: DamageType.Physical,
+                bonusMultiplier: fatigueMult
             );
 
             if (!DamageCalculator.CheckDodge(player.CurrentStats))
             {
                 player.TakeDamage(counterDamage, EntityID);
+                ApplyOnHitEffects(player); // 反击附带状态效果
                 Debug.Log($"[战斗] {gameObject.name} 被动反击成功！" +
                           $"伤害={counterDamage.FinalDamage:F1}" +
                           (counterDamage.IsCritical ? " 【暴击！】" : ""));
@@ -503,6 +536,30 @@ namespace EscapeTheTower.Entity.Monster
             else
             {
                 Debug.Log("[战斗] 玩家闪避了反击！");
+            }
+        }
+
+        /// <summary>
+        /// 攻击命中后按 SO 配置概率施加状态效果
+        /// 数据驱动：MonsterData_SO.onHitEffects
+        /// </summary>
+        private void ApplyOnHitEffects(EntityBase target)
+        {
+            if (monsterData == null || monsterData.onHitEffects == null) return;
+            if (target.StatusEffects == null) return;
+
+            foreach (var effect in monsterData.onHitEffects)
+            {
+                if (Random.value < effect.chance)
+                {
+                    target.StatusEffects.ApplyEffect(
+                        effect.effectType,
+                        effect.duration,
+                        effect.valuePerStack,
+                        EntityID,
+                        effect.stacks > 0 ? effect.stacks : 1
+                    );
+                }
             }
         }
 

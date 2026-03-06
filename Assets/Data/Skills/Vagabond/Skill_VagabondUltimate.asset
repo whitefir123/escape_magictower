@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b2cd77c52254e341b14a0ebdbec9aef, type: 3}
+  m_Name: Skill_VagabondUltimate
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.SkillData_SO
+  skillName: "\u6781\u5203\u98CE\u66B4"
+  skillID: vagabond_ultimate
+  slotType: 4
+  description: "\u6D88\u8017\u6EE1\u6012\u6C14\uFF0C8\u6BB5AOE\u6253\u51FB\uFF0C\u7EDD\u5BF9\u9738\u4F53\u514D\u75AB\u4F24\u5BB3\uFF0C15%\u7269\u7406\u5438\u8840\u3002"
+  cooldown: 1
+  manaCost: 0
+  requiresFullRage: 1
+  baseDamage: 30
+  atkScaling: 0.8
+  matkScaling: 0
+  damageType: 0
+  elementType: 0
+  hitCount: 8
+  hitInterval: 0.15
+  isAOE: 1
+  aoeRadius: 2.5
+  aoeAngle: 360
+  appliedEffect: 8
+  effectDuration: 0
+  grantsSuperArmor: 1
+  grantsInvincibility: 1
+  lifeStealPercent: 0.15
+  hasMovement: 0
+  movementDistance: 0
+  manaRestoreOnHit: 0

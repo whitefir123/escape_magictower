@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b2cd77c52254e341b14a0ebdbec9aef, type: 3}
+  m_Name: Skill_VagabondSwordPath
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.SkillData_SO
+  skillName: "\u5251\u6C14\u7EB5\u6A2A"
+  skillID: vagabond_sword_path
+  slotType: 0
+  description: "\u666E\u653B\u547D\u4E2D\u6062\u590D5MP\uFF0C\u53E0\u52A0\u5251\u8DEF(\u6700\u9AD810\u5C42)\u3002\u6EE1\u5C42\u65F6\u666E\u653B\u53D1\u5C04\u7A7F\u900F\u5251\u6C14\u3002\u8131\u62183\u79D2\u540E\u8870\u51CF\u3002"
+  cooldown: 0
+  manaCost: 0
+  requiresFullRage: 0
+  baseDamage: 0
+  atkScaling: 0
+  matkScaling: 0
+  damageType: 0
+  elementType: 0
+  hitCount: 1
+  hitInterval: 0
+  isAOE: 0
+  aoeRadius: 0
+  aoeAngle: 360
+  appliedEffect: 8
+  effectDuration: 0
+  grantsSuperArmor: 0
+  grantsInvincibility: 0
+  lifeStealPercent: 0
+  hasMovement: 0
+  movementDistance: 0
+  manaRestoreOnHit: 0

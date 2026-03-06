@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b2cd77c52254e341b14a0ebdbec9aef, type: 3}
+  m_Name: Skill_VagabondEvasion
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.SkillData_SO
+  skillName: "\u71D5\u8FD4"
+  skillID: vagabond_evasion
+  slotType: 5
+  description: "\u5411\u9762\u671D\u65B9\u5411\u7FFB\u6EDA\u4F4D\u79FB\u3002HP<30%\u65F6\u65E0\u654C\u5E27\u5EF6\u957F\u81F30.5s\u3002"
+  cooldown: 1.5
+  manaCost: 0
+  requiresFullRage: 0
+  baseDamage: 0
+  atkScaling: 0
+  matkScaling: 0
+  damageType: 0
+  elementType: 0
+  hitCount: 1
+  hitInterval: 0
+  isAOE: 0
+  aoeRadius: 0
+  aoeAngle: 360
+  appliedEffect: 8
+  effectDuration: 0
+  grantsSuperArmor: 0
+  grantsInvincibility: 0
+  lifeStealPercent: 0
+  hasMovement: 1
+  movementDistance: 2.5
+  manaRestoreOnHit: 0

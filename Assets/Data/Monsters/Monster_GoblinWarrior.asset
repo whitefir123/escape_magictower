@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_GoblinWarrior
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u54E5\u5E03\u6797\u6218\u58EB"
+  entityID: goblin_warrior
+  baseMaxHP: 45
+  baseMaxMP: 0
+  baseATK: 12
+  baseMATK: 0
+  baseDEF: 10
+  baseMDEF: 5
+  baseCritRate: 0
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 1.5
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 4168
+  maxHP_Max: 140
+  maxATK_Max: 28
+  maxMATK_Max: 0
+  maxDEF_Max: 20
+  maxMDEF_Max: 10
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 1.2
+  moveSpeedDescription: 
+  baseExpReward: 4
+  goldDropMin: 2
+  goldDropMax: 5
+  mechanicDescription: "\u6BD4\u9AB7\u9AC5\u7075\u6D3B\u7684\u8FD1\u6218\u5355\u4F4D\uFF0C\u6210\u7FA4\u65E0\u8111\u51B2\u950B"
+  immuneToEffects: 
+  onHitEffects:
+  - effectType: 2
+    chance: 0.4
+    duration: 5
+    valuePerStack: 3
+    stacks: 1
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

@@ -358,22 +358,51 @@ namespace EscapeTheTower.UI
                 _floorText.text = $"第 {evt.FloorNumber} 层";
         }
 
-        /// <summary>拾取物品时显示浮动提示</summary>
+        /// <summary>拾取物品时显示飘字（通过 FloatingTextManager 显示对应颜色）</summary>
         private void OnItemPickedUp(OnItemPickedUpEvent evt)
         {
-            string text = evt.ItemType switch
-            {
-                PickupType.HealthPotion => $"+{evt.Value} HP",
-                PickupType.ManaPotion => $"+{evt.Value} MP",
-                PickupType.GoldPile => $"+{evt.Value} 金币",
-                PickupType.KeyBronze => "+1 铜钥匙",
-                PickupType.KeySilver => "+1 银钥匙",
-                PickupType.KeyGold => "+1 金钥匙",
-                _ => null,
-            };
+            if (heroReference == null) return;
+            Vector3 pos = heroReference.transform.position;
 
-            if (text != null)
-                ShowFloatText(text);
+            var ftm = FindAnyObjectByType<FloatingTextManager>();
+            if (ftm == null)
+            {
+                // 降级：无飘字管理器时使用旧版浮动文字
+                string fallback = evt.ItemType switch
+                {
+                    PickupType.HealthPotion => $"+{evt.Value} HP",
+                    PickupType.ManaPotion => $"+{evt.Value} MP",
+                    PickupType.GoldPile => $"+{evt.Value} 金币",
+                    PickupType.KeyBronze => "+1 铜钥匙",
+                    PickupType.KeySilver => "+1 银钥匙",
+                    PickupType.KeyGold => "+1 金钥匙",
+                    _ => null,
+                };
+                if (fallback != null) ShowFloatText(fallback);
+                return;
+            }
+
+            switch (evt.ItemType)
+            {
+                case PickupType.HealthPotion:
+                    ftm.ShowHeal(pos, evt.Value);       // 绿色
+                    break;
+                case PickupType.ManaPotion:
+                    ftm.ShowManaHeal(pos, evt.Value);   // 蓝色
+                    break;
+                case PickupType.GoldPile:
+                    ftm.ShowGoldGain(pos, evt.Value);   // 金色
+                    break;
+                case PickupType.KeyBronze:
+                    ftm.ShowKeyPickup(pos, "铜钥匙", new Color(0.72f, 0.45f, 0.20f));
+                    break;
+                case PickupType.KeySilver:
+                    ftm.ShowKeyPickup(pos, "银钥匙", new Color(0.75f, 0.75f, 0.80f));
+                    break;
+                case PickupType.KeyGold:
+                    ftm.ShowKeyPickup(pos, "金钥匙", new Color(0.90f, 0.75f, 0.20f));
+                    break;
+            }
         }
 
         /// <summary>显示浮动提示文字（在玩家头顶，2秒后自动销毁）</summary>

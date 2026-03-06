@@ -31,9 +31,7 @@ namespace EscapeTheTower.Entity.Hero
         // === 输入处理器 ===
         private HeroInputHandler _input;
 
-        // === 格子移动 ===
-        private GridMovement _gridMovement;
-
+        // === 格子移动（使用基类 EntityBase._gridMovement） ===
         // === 子组件引用 ===
         private HeroSkillHandler _skillHandler;
         private HeroInventory _inventory;
@@ -196,8 +194,10 @@ namespace EscapeTheTower.Entity.Hero
             if (hp > maxHp) CurrentStats.Set(StatType.HP, maxHp);
         }
 
-        private void Update()
+        protected override void Update()
         {
+            base.Update(); // 驱动 EntityBase.DOT 定时器
+
             if (!IsAlive) return;
 
             UpdateMovement();
@@ -224,6 +224,15 @@ namespace EscapeTheTower.Entity.Hero
 
             // 对齐到格子
             _gridMovement.SnapToGrid();
+
+            // 绑定技能冷却 HUD
+            var skillHUD = FindAnyObjectByType<EscapeTheTower.UI.SkillCooldownHUD>();
+            if (skillHUD == null)
+            {
+                var hudObj = new GameObject("SkillCooldownHUD");
+                skillHUD = hudObj.AddComponent<EscapeTheTower.UI.SkillCooldownHUD>();
+            }
+            skillHUD.SetHeroReference(this);
 
             Debug.Log($"[HeroController] 英雄初始化完毕 | " +
                       $"职业={heroClassData?.entityName ?? "未配置"} | " +

@@ -12,8 +12,10 @@ namespace EscapeTheTower.Data
 {
     /// <summary>
     /// 第一层怪物数据注册表 —— 提供运行时怪物数据的静态工厂
-    /// 后续可替换为从 SO 资产加载
+    /// 已迁移至 SO 资产化方案，保留作为降级兜底
+    /// 新增/修改怪物请直接编辑 Assets/Data/Monsters/ 下的 .asset 文件
     /// </summary>
+    [System.Obsolete("请使用 Assets/Data/Monsters/ 下的 SO 资产。此类仅作为降级兜底保留。")]
     public static class Floor1MonsterRegistry
     {
         // =====================================================================
@@ -40,6 +42,9 @@ namespace EscapeTheTower.Data
             so.goldDropMin = 1; so.goldDropMax = 3;
             so.mechanicDescription = "高魔抗低物防的果冻沙包，近战割草目标";
             so.immuneToEffects = new StatusEffectType[0];
+            so.onHitEffects = new[] {
+                new OnHitEffect { effectType = StatusEffectType.Burn, chance = 0.3f, duration = 6f, valuePerStack = 0f, stacks = 1 }
+            };
             return so;
         }
 
@@ -196,6 +201,9 @@ namespace EscapeTheTower.Data
             so.goldDropMin = 2; so.goldDropMax = 5;
             so.mechanicDescription = "比骷髅灵活的近战单位，成群无脑冲锋";
             so.immuneToEffects = new StatusEffectType[0];
+            so.onHitEffects = new[] {
+                new OnHitEffect { effectType = StatusEffectType.Bleed, chance = 0.4f, duration = 5f, valuePerStack = 3f, stacks = 1 }
+            };
             return so;
         }
 
@@ -248,6 +256,9 @@ namespace EscapeTheTower.Data
             so.goldDropMin = 3; so.goldDropMax = 8;
             so.mechanicDescription = "巨大镰刀扇形AOE物理伤害，无实体标签免疫碰撞限制";
             so.immuneToEffects = new StatusEffectType[0];
+            so.onHitEffects = new[] {
+                new OnHitEffect { effectType = StatusEffectType.Poison, chance = 0.5f, duration = 8f, valuePerStack = 3f, stacks = 1 }
+            };
             return so;
         }
 

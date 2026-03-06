@@ -130,6 +130,14 @@ namespace EscapeTheTower
         public static float REAPER_TRIGGER_TIME_SECONDS => _config != null ? _config.reaperTriggerTimeSeconds : 45f * 60f;
         public static int FATIGUE_LETHAL_STACKS => _config != null ? _config.fatigueLethalStacks : 10;
 
+        // === DOT 结算 ===
+        // 来源：GameData_Blueprints/02_Status_Ailments.md
+        public const float DOT_TICK_INTERVAL = 1.0f;                // DOT 结算间隔（秒）
+        public const float BURN_PERCENT_MAX_HP = 0.05f;             // 灼烧每层每秒扣最大HP 5%
+        public const float BLEED_MOVE_MULTIPLIER = 2.5f;            // 流血移动惩罚倍率
+        public const float BURN_HEAL_REDUCTION_PER_STACK = 0.10f;   // 灼烧每层降低治疗 10%
+        public const float BURN_HEAL_REDUCTION_MAX = 0.60f;         // 灼烧最多降低治疗 60%
+
         // === 指令缓冲 ===
         public static int MAX_LOOT_SPAWNS_PER_FRAME => _config != null ? _config.maxLootSpawnsPerFrame : 3;
 

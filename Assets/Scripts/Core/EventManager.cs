@@ -219,6 +219,12 @@ namespace EscapeTheTower.Core
         public int NewFloorLevel;
     }
 
+    /// <summary>游戏胜利事件（9 层通关后广播）</summary>
+    public struct OnVictoryEvent : IGameEvent
+    {
+        public EventMeta Meta { get; set; }
+    }
+
     /// <summary>怪物掉落钥匙事件（击杀即时获得）</summary>
     public struct OnKeyDroppedEvent : IGameEvent
     {

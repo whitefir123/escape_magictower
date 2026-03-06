@@ -120,6 +120,18 @@ namespace EscapeTheTower.Entity.Hero
                 Debug.Log($"[战斗] 玩家攻击 {monster.gameObject.name}，" +
                           $"伤害={damageResult.FinalDamage:F1}" +
                           (damageResult.IsCritical ? " 【暴击！】" : ""));
+
+                // 元素反应预埋（当前普攻 ElementType.None，技能系统接入后生效）
+                if (damageResult.ElementType != ElementType.None)
+                {
+                    var monsterStatus = monster.StatusEffects;
+                    if (monsterStatus != null)
+                    {
+                        ElementalReaction.CheckAndTrigger(
+                            monsterStatus, damageResult.ElementType,
+                            monster.EntityID, _hero.EntityID);
+                    }
+                }
             }
             else
             {

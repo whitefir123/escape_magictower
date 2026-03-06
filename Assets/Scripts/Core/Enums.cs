@@ -300,6 +300,7 @@ namespace EscapeTheTower
         Active1,        // 主动小技能一
         Active2,        // 主动小技能二
         Ultimate,       // 终极必杀技（怒气驱动）
+        Evasion,        // 专属闪避
     }
 
     /// <summary>

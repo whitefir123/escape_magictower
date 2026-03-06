@@ -20,7 +20,9 @@ namespace EscapeTheTower.Entity.Hero
 {
     /// <summary>
     /// 玩家输入处理器 —— 将原始输入转化为抽象的意图驱动信号
+    /// 执行顺序优先（-100），确保输入标记在其他脚本的 Update 之前被设置
     /// </summary>
+    [DefaultExecutionOrder(-100)]
     public class HeroInputHandler : MonoBehaviour
     {
         // === 移动输入（按键栈机制） ===
@@ -30,6 +32,12 @@ namespace EscapeTheTower.Entity.Hero
         /// 基于按键栈，最后按下的方向键拥有最高优先级。
         /// </summary>
         public Vector2Int MoveDirection { get; private set; }
+
+        /// <summary>
+        /// 最后一次移动的面朝方向（不移动时保持上一次方向）
+        /// 用于技能方向判定。初始默认朝下。
+        /// </summary>
+        public Vector2Int LastFacingDirection { get; private set; } = Vector2Int.down;
 
         /// <summary>是否正在移动（有方向键按下）</summary>
         public bool IsMoving => MoveDirection != Vector2Int.zero;
@@ -149,6 +157,12 @@ namespace EscapeTheTower.Entity.Hero
 
             // 从栈顶读取当前有效方向
             MoveDirection = _inputStack.Count > 0 ? _inputStack[^1] : Vector2Int.zero;
+
+            // 记住最后移动方向（用于技能面朝判定）
+            if (MoveDirection != Vector2Int.zero)
+            {
+                LastFacingDirection = MoveDirection;
+            }
         }
 
         /// <summary>方向入栈（防重复）</summary>

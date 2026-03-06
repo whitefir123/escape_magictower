@@ -12,6 +12,29 @@ using UnityEngine;
 namespace EscapeTheTower.Data
 {
     /// <summary>
+    /// 攻击附带状态效果配置（Inspector 可编辑）
+    /// </summary>
+    [System.Serializable]
+    public struct OnHitEffect
+    {
+        [Tooltip("施加的状态效果类型")]
+        public StatusEffectType effectType;
+
+        [Tooltip("触发概率 (0~1)")]
+        [Range(0f, 1f)]
+        public float chance;
+
+        [Tooltip("效果持续时间 (秒)")]
+        public float duration;
+
+        [Tooltip("每层每秒效果值（DOT 伤害、减防数值等）")]
+        public float valuePerStack;
+
+        [Tooltip("初始叠层数（默认 1）")]
+        public int stacks;
+    }
+
+    /// <summary>
     /// 怪物数据 SO —— 继承 EntityData_SO，包含怪物特有配置
     /// 注意：基类中的属性字段代表 Min 值，本类额外提供 Max 值
     /// 实际生成时由同心圆距离法则在 Min~Max 之间插值
@@ -62,6 +85,10 @@ namespace EscapeTheTower.Data
         [Header("=== 状态免疫 ===")]
         [Tooltip("免疫的状态效果类型")]
         public StatusEffectType[] immuneToEffects;
+
+        [Header("=== 攻击附带效果 ===")]
+        [Tooltip("普攻命中时有概率施加的状态效果（数据驱动，零硬编码）")]
+        public OnHitEffect[] onHitEffects;
 
         [Header("=== 硬控抗性 ===")]
         [Tooltip("是否拥有硬控递减机制（Boss 专用）")]

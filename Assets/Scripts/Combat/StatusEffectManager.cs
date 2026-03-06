@@ -53,8 +53,24 @@ namespace EscapeTheTower.Combat
     {
         private readonly List<StatusEffectInstance> _activeEffects = new List<StatusEffectInstance>();
 
+        /// <summary>免疫的状态效果类型集合</summary>
+        private readonly HashSet<StatusEffectType> _immunities = new HashSet<StatusEffectType>();
+
         /// <summary>所有当前活跃的状态效果（只读视图）</summary>
         public IReadOnlyList<StatusEffectInstance> ActiveEffects => _activeEffects;
+
+        /// <summary>
+        /// 设置免疫列表（由 MonsterBase.Initialize 调用）
+        /// </summary>
+        public void SetImmunities(StatusEffectType[] immuneTypes)
+        {
+            _immunities.Clear();
+            if (immuneTypes != null)
+            {
+                foreach (var t in immuneTypes)
+                    _immunities.Add(t);
+            }
+        }
 
         // =====================================================================
         //  查表：每种效果的叠加规则
@@ -116,6 +132,21 @@ namespace EscapeTheTower.Combat
         /// <param name="stacks">初始叠层数（默认 1）</param>
         public void ApplyEffect(StatusEffectType effectType, float duration, float valuePerStack, int applierID, int stacks = 1)
         {
+            // 霸体检查：霸体状态下免疫控制效果
+            var entity = GetComponent<EscapeTheTower.Entity.EntityBase>();
+            if (entity != null && entity.HasSuperArmor && IsControlEffect(effectType))
+            {
+                Debug.Log($"[StatusEffect] {gameObject.name} 霸体中，免疫 {effectType}");
+                return;
+            }
+
+            // 免疫检查
+            if (_immunities.Contains(effectType))
+            {
+                Debug.Log($"[StatusEffect] 效果 {effectType} 被免疫，施加失败。");
+                return;
+            }
+
             var rule = GetStackingRule(effectType);
 
             // 查找是否已存在同类型效果
@@ -333,6 +364,22 @@ namespace EscapeTheTower.Combat
             }
 
             return block;
+        }
+
+        // =====================================================================
+        //  辅助方法
+        // =====================================================================
+
+        /// <summary>
+        /// 判定效果类型是否属于控制类（霸体期间应被免疫）
+        /// </summary>
+        private static bool IsControlEffect(StatusEffectType type)
+        {
+            return type == StatusEffectType.Stun
+                || type == StatusEffectType.Frozen
+                || type == StatusEffectType.Root
+                || type == StatusEffectType.Charm
+                || type == StatusEffectType.Slowed;
         }
     }
 }

@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Slime
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u53F2\u83B1\u59C6"
+  entityID: slime
+  baseMaxHP: 40
+  baseMaxMP: 0
+  baseATK: 4
+  baseMATK: 0
+  baseDEF: 1
+  baseMDEF: 8
+  baseCritRate: 0
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.4
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 4176
+  maxHP_Max: 120
+  maxATK_Max: 15
+  maxMATK_Max: 0
+  maxDEF_Max: 5
+  maxMDEF_Max: 20
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 2
+  moveSpeedDescription: 
+  baseExpReward: 4
+  goldDropMin: 1
+  goldDropMax: 3
+  mechanicDescription: "\u9AD8\u9B54\u6297\u4F4E\u7269\u9632\u7684\u679C\u51BB\u6C99\u5305\uFF0C\u8FD1\u6218\u5272\u8349\u76EE\u6807"
+  immuneToEffects: 
+  onHitEffects:
+  - effectType: 0
+    chance: 0.3
+    duration: 6
+    valuePerStack: 0
+    stacks: 1
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

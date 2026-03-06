@@ -37,6 +37,9 @@ namespace EscapeTheTower.Map
         [SerializeField] private int baseSeed = 0;
 
         [Header("=== 怪物配置 ===")]
+        [Tooltip("楼层怪物配置 SO（从 Assets/Data/Monsters/ 拖入）")]
+        [SerializeField] private FloorMonsterConfig_SO floorConfig;
+
         [Tooltip("是否生成 Boss")]
         [SerializeField] private bool spawnBoss = true;
 
@@ -65,6 +68,14 @@ namespace EscapeTheTower.Map
             Instance = this;
 
             _resolvedBaseSeed = baseSeed != 0 ? baseSeed : System.Environment.TickCount;
+
+            // 自动加载楼层怪物配置（动态 AddComponent 场景无法手动拖拽）
+            if (floorConfig == null)
+            {
+                floorConfig = Resources.Load<FloorMonsterConfig_SO>("Floor1Config");
+                if (floorConfig != null)
+                    Debug.Log("[FloorTransition] 自动加载 Floor1Config（from Resources）");
+            }
         }
 
         private void OnDestroy()
@@ -295,8 +306,39 @@ namespace EscapeTheTower.Map
 
         private void SpawnMonstersInRooms()
         {
-            var registry = Floor1MonsterRegistry.GetAllNormalMonsters();
-            var bossData = Floor1MonsterRegistry.GetBossData();
+            // 优先从 SO 资产读取，降级兜底到程序化注册
+            MonsterData_SO[] registry;
+            MonsterData_SO bossData;
+
+            if (floorConfig != null && floorConfig.normalMonsters != null && floorConfig.normalMonsters.Length > 0)
+            {
+                // 过滤掉可能因资产引用丢失而变为 null 的条目
+                var validMonsters = System.Array.FindAll(floorConfig.normalMonsters, m => m != null);
+                if (validMonsters.Length > 0)
+                {
+                    registry = validMonsters;
+                    bossData = floorConfig.bossData;
+                    Debug.Log($"[FloorTransition] 从 SO 资产加载怪物池（{registry.Length} 种）");
+                }
+                else
+                {
+                    // SO 资产存在但所有引用丢失，降级
+#pragma warning disable CS0618
+                    registry = Floor1MonsterRegistry.GetAllNormalMonsters();
+                    bossData = Floor1MonsterRegistry.GetBossData();
+#pragma warning restore CS0618
+                    Debug.LogWarning("[FloorTransition] floorConfig 怪物引用全部为 null，降级使用 Floor1MonsterRegistry");
+                }
+            }
+            else
+            {
+                // 降级兜底：使用程序化注册（floorConfig 未配置时）
+#pragma warning disable CS0618 // Obsolete 降级兜底，预期行为
+                registry = Floor1MonsterRegistry.GetAllNormalMonsters();
+                bossData = Floor1MonsterRegistry.GetBossData();
+#pragma warning restore CS0618
+                Debug.LogWarning("[FloorTransition] floorConfig 未配置，降级使用 Floor1MonsterRegistry");
+            }
             var tracker = RoomTracker.Instance;
 
             // 使用楼层种子驱动的随机数（保证同种子可复现）

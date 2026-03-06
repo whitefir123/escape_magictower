@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_SkeletonMage
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u9AB7\u9AC5\u6CD5\u5E08"
+  entityID: skeleton_mage
+  baseMaxHP: 25
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 18
+  baseDEF: 2
+  baseMDEF: 15
+  baseCritRate: 0
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.4
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 16385
+  maxHP_Max: 80
+  maxATK_Max: 0
+  maxMATK_Max: 40
+  maxDEF_Max: 8
+  maxMDEF_Max: 35
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 3
+  moveSpeedDescription: 
+  baseExpReward: 5
+  goldDropMin: 3
+  goldDropMax: 6
+  mechanicDescription: "\u53D1\u5C04\u7F13\u6162\u8FFD\u8E2A\u5965\u672F\u5F39\uFF0C\u903C\u8FEB\u73A9\u5BB6\u4EA4\u8D70\u4F4D\u6216\u9632\u5FA1\u6280\u80FD"
+  immuneToEffects: 0100000002000000
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

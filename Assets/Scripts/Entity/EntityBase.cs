@@ -12,6 +12,7 @@ using UnityEngine;
 using EscapeTheTower.Core;
 using EscapeTheTower.Data;
 using EscapeTheTower.Combat;
+using EscapeTheTower.UI;
 
 namespace EscapeTheTower.Entity
 {
@@ -30,6 +31,20 @@ namespace EscapeTheTower.Entity
         /// <summary>实体阵营</summary>
         public Faction Faction { get; set; } = Faction.Enemy;
 
+        // === 无敌帧 / 霸体状态 ===
+        /// <summary>是否处于无敌帧状态（完全免疫一切伤害）</summary>
+        public bool IsInvincible { get; private set; }
+
+        /// <summary>是否处于霸体状态（免疫控制效果，但仍受伤害）</summary>
+        public bool HasSuperArmor { get; private set; }
+
+        private float _invincibleTimer;
+        private float _superArmorTimer;
+
+        // 飘字管理器缓存（避免每次 TakeDamage 调用反射查找）
+        private FloatingTextManager _cachedFloatTextMgr;
+        private bool _floatTextSearched;
+
         /// <summary>实体是否存活</summary>
         public bool IsAlive => CurrentStats.Get(StatType.HP) > 0f;
 
@@ -39,8 +54,15 @@ namespace EscapeTheTower.Entity
         /// <summary>实体数据 SO 的公共访问器</summary>
         public EntityData_SO EntityData => entityData;
 
+        /// <summary>状态效果管理器（Awake 中自动挂载）</summary>
+        public StatusEffectManager StatusEffects { get; private set; }
+
         // === 属性管线 ===
         protected AttributePipeline _pipeline;
+
+        // === DOT 结算 ===
+        private float _dotTickTimer;
+        [System.NonSerialized] protected GridMovement _gridMovement;
 
         // === 管线各层级的数据输入（子类或外部系统填充） ===
         protected StatBlock _talentBonuses;                  // 层级2：天赋树
@@ -63,6 +85,14 @@ namespace EscapeTheTower.Entity
             _runeStats = new List<StatBlock>();
             _tempBuffStats = new List<StatBlock>();
             CurrentStats = new StatBlock();
+
+            // 确保挂载 StatusEffectManager（英雄和怪物统一在基类处理）
+            StatusEffects = GetComponent<StatusEffectManager>();
+            if (StatusEffects == null)
+                StatusEffects = gameObject.AddComponent<StatusEffectManager>();
+
+            // 缓存 GridMovement 引用（用于流血移动检测）
+            _gridMovement = GetComponent<GridMovement>();
         }
 
         protected virtual void Start()
@@ -70,6 +100,41 @@ namespace EscapeTheTower.Entity
             if (entityData != null)
             {
                 RecalculateStats();
+            }
+        }
+
+        protected virtual void Update()
+        {
+            float dt = Time.deltaTime;
+
+            // 无敌帧计时器递减
+            if (_invincibleTimer > 0f)
+            {
+                _invincibleTimer -= dt;
+                if (_invincibleTimer <= 0f)
+                {
+                    _invincibleTimer = 0f;
+                    IsInvincible = false;
+                }
+            }
+
+            // 霸体计时器递减
+            if (_superArmorTimer > 0f)
+            {
+                _superArmorTimer -= dt;
+                if (_superArmorTimer <= 0f)
+                {
+                    _superArmorTimer = 0f;
+                    HasSuperArmor = false;
+                }
+            }
+
+            // DOT 定时结算
+            _dotTickTimer += dt;
+            if (_dotTickTimer >= GameConstants.DOT_TICK_INTERVAL)
+            {
+                _dotTickTimer -= GameConstants.DOT_TICK_INTERVAL;
+                TickDOT();
             }
         }
 
@@ -96,13 +161,19 @@ namespace EscapeTheTower.Entity
             float prevMP = CurrentStats.Get(StatType.MP);
             float prevRage = CurrentStats.Get(StatType.Rage);
 
+            // 合并 StatusEffect 的 Buff/Debuff 属性到层级6
+            // 每次全量重算时重新生成，确保不使用增量逻辑
+            var allBuffs = new List<StatBlock>(_tempBuffStats);
+            var statusBlock = StatusEffects?.GenerateBuffStatBlock();
+            if (statusBlock != null) allBuffs.Add(statusBlock);
+
             // 全量重算
             CurrentStats = _pipeline.RecalculateAll(
                 entityData,
                 _talentBonuses,
                 _equipmentStats,
                 _runeStats,
-                _tempBuffStats
+                allBuffs
             );
 
             // 智能恢复 HP/MP：如果之前是满血则保持满血，否则按比例缩放
@@ -146,6 +217,15 @@ namespace EscapeTheTower.Entity
         {
             if (!IsAlive) return;
 
+            // 无敌帧检查：完全免疫一切伤害
+            if (IsInvincible)
+            {
+                // 显示"免疫"飘字
+                GetFloatingTextManager()?.Show(transform.position, "免疫", FloatingTextType.Immune);
+                Debug.Log($"[Entity] {gameObject.name} 处于无敌帧，伤害被完全免疫！");
+                return;
+            }
+
             // === 承伤前事件（允许被劫持，如免死金牌） ===
             var beforeEvent = new OnEntityTakeDamageBeforeEvent
             {
@@ -184,6 +264,17 @@ namespace EscapeTheTower.Entity
                 WasCritical = damage.IsCritical,
             });
 
+            // 显示伤害飘字
+            var floatTextMgr = GetFloatingTextManager();
+            if (floatTextMgr != null)
+            {
+                // 受击方为怪物（Enemy）→ 伤害来自玩家 → 红色
+                // 受击方为玩家（Player）→ 伤害来自怪物 → 白色
+                bool isPlayerDamage = (Faction == Faction.Enemy);
+                floatTextMgr.ShowDamage(transform.position, finalDamage,
+                    damage.IsCritical, damage.DamageType, isPlayerDamage);
+            }
+
             // 死亡检测
             if (!IsAlive)
             {
@@ -193,14 +284,89 @@ namespace EscapeTheTower.Entity
 
         /// <summary>
         /// 治疗/回复生命值
+        /// 灼烧状态下治疗效果衰减（每层10%，上限60%）
+        /// 来源：GameData_Blueprints/02_Status_Ailments.md §2
         /// </summary>
         public virtual void Heal(float amount)
         {
             if (!IsAlive || amount <= 0f) return;
 
+            // 灼烧抑制治疗
+            if (StatusEffects != null)
+            {
+                int burnStacks = StatusEffects.GetStacks(StatusEffectType.Burn);
+                if (burnStacks > 0)
+                {
+                    float reduction = Mathf.Min(
+                        burnStacks * GameConstants.BURN_HEAL_REDUCTION_PER_STACK,
+                        GameConstants.BURN_HEAL_REDUCTION_MAX);
+                    amount *= (1f - reduction);
+                }
+            }
+
             float maxHP = CurrentStats.Get(StatType.MaxHP);
             float currentHP = CurrentStats.Get(StatType.HP);
             CurrentStats.Set(StatType.HP, Mathf.Min(currentHP + amount, maxHP));
+        }
+
+        // =====================================================================
+        //  DOT 结算引擎
+        //  来源：GameData_Blueprints/02_Status_Ailments.md
+        // =====================================================================
+
+        /// <summary>
+        /// DOT 每秒结算（中毒/灼烧/流血）
+        /// 中毒：每层每秒固定毒属性真实伤害
+        /// 灼烧：每层每秒按目标最大HP百分比的真实伤害
+        /// 流血：每层每秒固定物理伤害，移动中伤害翻倍
+        /// </summary>
+        private void TickDOT()
+        {
+            if (!IsAlive || StatusEffects == null) return;
+
+            var effects = StatusEffects.ActiveEffects;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                var e = effects[i];
+                float damage = 0f;
+                DamageType dtype = DamageType.True;
+
+                switch (e.EffectType)
+                {
+                    case StatusEffectType.Poison:
+                        // 每层每秒固定毒伤（真实伤害）
+                        damage = e.Stacks * e.ValuePerStack;
+                        break;
+
+                    case StatusEffectType.Burn:
+                        // 每层每秒 = 最大HP百分比
+                        damage = e.Stacks * CurrentStats.Get(StatType.MaxHP)
+                                 * GameConstants.BURN_PERCENT_MAX_HP;
+                        break;
+
+                    case StatusEffectType.Bleed:
+                        // 每层每秒固定物理伤害
+                        damage = e.Stacks * e.ValuePerStack;
+                        // 移动惩罚：移动中伤害翻倍
+                        if (_gridMovement != null && _gridMovement.IsMoving)
+                            damage *= GameConstants.BLEED_MOVE_MULTIPLIER;
+                        dtype = DamageType.Physical;
+                        break;
+                }
+
+                if (damage > 0f)
+                {
+                    Debug.Log($"[DOT] {gameObject.name} 受到 {e.EffectType} 伤害：{damage:F1} (层数={e.Stacks})");
+                    var result = new DamageResult
+                    {
+                        FinalDamage = damage,
+                        DamageType = dtype,
+                        IsCritical = false,
+                    };
+                    TakeDamage(result, e.ApplierID);
+                    if (!IsAlive) return; // DOT 致死，中断后续结算
+                }
+            }
         }
 
         // =====================================================================
@@ -294,6 +460,62 @@ namespace EscapeTheTower.Entity
             {
                 RecalculateStats();
             }
+        }
+
+        // =====================================================================
+        //  飘字管理器缓存
+        // =====================================================================
+
+        /// <summary>
+        /// 获取飘字管理器（首次调用缓存，后续直接返回）
+        /// </summary>
+        private FloatingTextManager GetFloatingTextManager()
+        {
+            if (!_floatTextSearched)
+            {
+                _floatTextSearched = true;
+                _cachedFloatTextMgr = FindAnyObjectByType<FloatingTextManager>();
+            }
+            return _cachedFloatTextMgr;
+        }
+
+        // =====================================================================
+        //  无敌帧 / 霸体状态管理
+        // =====================================================================
+
+        /// <summary>
+        /// 进入无敌帧状态（持续指定秒数，期间完全免疫伤害）。
+        /// 多次调用取最长剩余时间。
+        /// </summary>
+        public void SetInvincible(float duration)
+        {
+            if (duration <= 0f) return;
+            IsInvincible = true;
+            _invincibleTimer = Mathf.Max(_invincibleTimer, duration);
+            Debug.Log($"[Entity] {gameObject.name} 进入无敌帧 {duration:F2}s");
+        }
+
+        /// <summary>
+        /// 进入霸体状态（持续指定秒数，期间免疫控制效果但仍受伤害）。
+        /// 多次调用取最长剩余时间。
+        /// </summary>
+        public void SetSuperArmor(float duration)
+        {
+            if (duration <= 0f) return;
+            HasSuperArmor = true;
+            _superArmorTimer = Mathf.Max(_superArmorTimer, duration);
+            Debug.Log($"[Entity] {gameObject.name} 进入霸体 {duration:F2}s");
+        }
+
+        /// <summary>
+        /// 强制清除无敌帧和霸体状态（技能结束时主动调用）
+        /// </summary>
+        public void ClearCombatStates()
+        {
+            IsInvincible = false;
+            _invincibleTimer = 0f;
+            HasSuperArmor = false;
+            _superArmorTimer = 0f;
         }
 
         // =====================================================================

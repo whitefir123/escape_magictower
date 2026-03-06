@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 521bd3bbc9f3c564b9d3ef92c8734f81, type: 3}
+  m_Name: Floor1Config
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.FloorMonsterConfig_SO
+  normalMonsters:
+  - {fileID: 11400000, guid: c95825090b2aaa242837c5c81f2dfddf, type: 2}
+  - {fileID: 11400000, guid: f777b7d853a5ee940bf0dc99203c88b1, type: 2}
+  - {fileID: 11400000, guid: c8fa86777ce80de4798f9f1120397f29, type: 2}
+  - {fileID: 11400000, guid: e0ac9b8cae174ce48a7134e73fb3835d, type: 2}
+  - {fileID: 11400000, guid: fe31ed0bb0ade9d4f8788e14150875a2, type: 2}
+  - {fileID: 11400000, guid: 8d953a7ed24a01643a4c0a735a564f7e, type: 2}
+  - {fileID: 11400000, guid: 9011940672566a2469493371b4981023, type: 2}
+  - {fileID: 11400000, guid: 694041934a9952441bf564b53363b512, type: 2}
+  - {fileID: 11400000, guid: 63c5df3d38e881c4e821b17b94adcd71, type: 2}
+  bossData: {fileID: 11400000, guid: 0d565e143205b564595345c2ee4fb8ba, type: 2}

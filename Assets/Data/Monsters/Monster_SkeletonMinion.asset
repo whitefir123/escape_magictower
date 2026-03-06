@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_SkeletonMinion
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u9AB7\u9AC5\u5C0F\u5175"
+  entityID: skeleton_minion
+  baseMaxHP: 50
+  baseMaxMP: 0
+  baseATK: 10
+  baseMATK: 0
+  baseDEF: 12
+  baseMDEF: 3
+  baseCritRate: 0
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 1
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 4097
+  maxHP_Max: 180
+  maxATK_Max: 30
+  maxMATK_Max: 0
+  maxDEF_Max: 35
+  maxMDEF_Max: 10
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 1.2
+  moveSpeedDescription: 
+  baseExpReward: 5
+  goldDropMin: 2
+  goldDropMax: 5
+  mechanicDescription: "\u6807\u51C6\u8FD1\u6218\u8089\u76FE\uFF0C\u514D\u75AB\u6BD2\u7D20\u548C\u6D41\u8840"
+  immuneToEffects: 0100000002000000
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0
