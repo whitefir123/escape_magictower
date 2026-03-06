@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Boss_DoomLocomotive
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u6B8B\u7834\u7684\u84B8\u6C7D\u672B\u65E5\u706B\u8F66"
+  entityID: boss_doom_locomotive
+  baseMaxHP: 8000
+  baseMaxMP: 0
+  baseATK: 100
+  baseMATK: 80
+  baseDEF: 80
+  baseMDEF: 40
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 132100
+  maxHP_Max: 13000
+  maxATK_Max: 180
+  maxMATK_Max: 150
+  maxDEF_Max: 130
+  maxMDEF_Max: 80
+  dodge_Max: 0
+  critResist: 0.5
+  attackInterval: 3
+  moveSpeedDescription: 
+  baseExpReward: 500
+  goldDropMin: 100
+  goldDropMax: 250
+  mechanicDescription: "\u7EC4\u88C5\u5012\u8BA1\u65F6Boss\uFF0C5\u9636\u6BB5\u6E10\u8FDB\u5F3A\u5316\uFF0C45\u5206\u949F\u540E\u4E3B\u52A8\u730E\u6740"
+  immuneToEffects: 0200000001000000
+  onHitEffects: []
+  hasCCDiminishing: 1
+  hasPermUnstoppable: 1

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_TreasureGoblin
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u63A2\u5B9D\u5730\u7CBE"
+  entityID: treasure_goblin
+  baseMaxHP: 600
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 0
+  baseDEF: 35
+  baseMDEF: 35
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.15
+  baseMoveSpeed: 1.3
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 8
+  maxHP_Max: 850
+  maxATK_Max: 0
+  maxMATK_Max: 0
+  maxDEF_Max: 60
+  maxMDEF_Max: 60
+  dodge_Max: 0.15
+  critResist: 0
+  attackInterval: 1
+  moveSpeedDescription: 
+  baseExpReward: 50
+  goldDropMin: 30
+  goldDropMax: 80
+  mechanicDescription: "\u7A00\u6709\u798F\u5229\u602A\uFF0C15\u79D2\u5185\u51FB\u6740\u7206\u6781\u54C1\u9053\u5177\uFF0C\u5426\u5219\u9003\u8DD1\u6D88\u5931"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

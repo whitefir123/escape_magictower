@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using EscapeTheTower.Core;
 using EscapeTheTower.Data;
+using EscapeTheTower.Equipment.SetResonance;
 
 namespace EscapeTheTower.Equipment
 {
@@ -39,6 +40,13 @@ namespace EscapeTheTower.Equipment
         /// <summary>背包容量上限（5页×30格=150，后续可被天赋/符文扩展）</summary>
         [SerializeField] private int _inventoryCapacity = 150;
 
+        [Header("套装共鸣")]
+        [Tooltip("所有套装共鸣定义 SO（在 Inspector 中拖入）")]
+        [SerializeField] private SetResonanceDefinition_SO[] _setDefinitions;
+
+        /// <summary>套装共鸣引擎实例</summary>
+        private SetResonanceEngine _resonanceEngine;
+
         // === 事件 ===
         /// <summary>穿戴变更事件：装备穿戴/卸除后触发</summary>
         public event Action OnEquipmentChanged;
@@ -50,12 +58,34 @@ namespace EscapeTheTower.Equipment
         private void OnEnable()
         {
             EventManager.Subscribe<OnItemPickedUpEvent>(OnItemPickedUp);
-            Debug.Log("[HeroEquipmentManager] OnEnable → 已订阅 OnItemPickedUpEvent");
+
+            // 初始化套装共鸣引擎
+            _resonanceEngine = new SetResonanceEngine();
+            var owner = GetComponent<Entity.EntityBase>();
+            if (_setDefinitions != null && owner != null)
+            {
+                _resonanceEngine.Initialize(_setDefinitions, owner);
+            }
+
+            // 订阅自身穿戴变更事件 → 自动重算共鸣
+            OnEquipmentChanged += OnEquipChanged_EvaluateResonance;
+
+            Debug.Log("[HeroEquipmentManager] OnEnable → 已订阅事件 + 初始化共鸣引擎");
         }
 
         private void OnDisable()
         {
             EventManager.Unsubscribe<OnItemPickedUpEvent>(OnItemPickedUp);
+            OnEquipmentChanged -= OnEquipChanged_EvaluateResonance;
+            _resonanceEngine?.Cleanup();
+        }
+
+        /// <summary>
+        /// 装备变更时自动重算套装共鸣
+        /// </summary>
+        private void OnEquipChanged_EvaluateResonance()
+        {
+            _resonanceEngine?.Evaluate(GetEquippedItemsArray());
         }
 
         // =====================================================================
@@ -231,6 +261,35 @@ namespace EscapeTheTower.Equipment
             }
             return blocks;
         }
+
+        /// <summary>
+        /// 获取套装共鸣提供的属性加成 StatBlock
+        /// 供属性管线在 Layer3 之后追加使用
+        /// </summary>
+        public StatBlock GetSetResonanceStatBlock()
+        {
+            return _resonanceEngine?.GetCombinedStatModifiers() ?? new StatBlock();
+        }
+
+        /// <summary>
+        /// 获取当前已穿戴装备的数组（6 部位，未穿戴为 null）
+        /// </summary>
+        public EquipmentData[] GetEquippedItemsArray()
+        {
+            var items = new EquipmentData[6];
+            foreach (var kvp in _equippedItems)
+            {
+                int idx = (int)kvp.Key;
+                if (idx >= 0 && idx < 6)
+                    items[idx] = kvp.Value;
+            }
+            return items;
+        }
+
+        /// <summary>
+        /// 获取套装共鸣引擎引用（供外部查询激活的被动）
+        /// </summary>
+        public SetResonanceEngine ResonanceEngine => _resonanceEngine;
 
         // =====================================================================
         //  调试

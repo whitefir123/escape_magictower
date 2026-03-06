@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18ce6ee642223a24faabd36c501adcea, type: 3}
+  m_Name: SetResonance_Aegis
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Equipment.SetResonance.SetResonanceDefinition_SO
+  setNameCN: "\u4E0D\u6BC1\u4E4B\u94A2\u5C4F\u969C"
+  setNameEN: Aegis of Indestructible Steel
+  description: "\u91CD\u88C5\u53CD\u4F24\u6D41"
+  slotRequirements:
+  - slot: 0
+    affixOption1: "\u7834\u7532\u7684"
+    affixOption2: "\u2026\u4E4B\u8FDE\u51FB"
+  - slot: 1
+    affixOption1: "\u51CF\u4F24\u7684"
+    affixOption2: "\u2026\u4E4B\u5B88\u62A4"
+  - slot: 2
+    affixOption1: "\u51CF\u4F24\u7684"
+    affixOption2: "\u2026\u4E4B\u53CD\u4F24"
+  - slot: 3
+    affixOption1: "\u575A\u56FA\u7684"
+    affixOption2: "\u2026\u4E4B\u51CFCD"
+  - slot: 4
+    affixOption1: "\u575A\u56FA\u7684"
+    affixOption2: "\u2026\u4E4B\u8D2A\u5A6A"
+  - slot: 5
+    affixOption1: "\u6781\u901F\u7684"
+    affixOption2: "\u2026\u4E4B\u62A4\u76FE"
+  parameters:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  passiveClassName: EscapeTheTower.Equipment.SetResonance.Passives.AegisSetPassive

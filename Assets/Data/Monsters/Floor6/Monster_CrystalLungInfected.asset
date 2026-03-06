@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_CrystalLungInfected
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u80BA\u75E8\u611F\u67D3\u8005"
+  entityID: crystal_lung_infected
+  baseMaxHP: 300
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 40
+  baseDEF: 25
+  baseMDEF: 15
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.15
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 1
+  maxHP_Max: 450
+  maxATK_Max: 0
+  maxMATK_Max: 65
+  maxDEF_Max: 40
+  maxMDEF_Max: 30
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 3
+  moveSpeedDescription: 
+  baseExpReward: 18
+  goldDropMin: 5
+  goldDropMax: 12
+  mechanicDescription: "\u53D7\u51FB\u55B7\u5C04\u6676\u5316\u7C89\u5C18\uFF0C\u9644\u52A0\u6613\u788E(\u53D7\u4F24+20%)\uFF0C\u6B7B\u4EA1\u7C89\u5C18\u7206\u70B8"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

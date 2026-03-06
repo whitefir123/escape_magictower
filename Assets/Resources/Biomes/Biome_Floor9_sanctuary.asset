@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfefc6d54d1d3dd49bf68d2961e5c187, type: 3}
+  m_Name: Biome_Floor9_sanctuary
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.BiomeConfig_SO
+  biomeName: "\u795E\u5723\u6240"
+  biomeID: sanctuary
+  biomeIndex: 9
+  biomeDescription: "\u7B2C9\u5C42 - \u795E\u5723\u6240"
+  normalMonsterPool:
+  - {fileID: 11400000, guid: 2ed877cdb818cdb49b0366d678ab67bc, type: 2}
+  - {fileID: 11400000, guid: 9342b96b02f7b4c4ebb0dde260e9e48e, type: 2}
+  - {fileID: 11400000, guid: 7759fd5c703b1f743af0244cb51896d5, type: 2}
+  - {fileID: 11400000, guid: ee70a6ac07587c54ea6aad13cee4f16d, type: 2}
+  - {fileID: 11400000, guid: 9660dd7a30abb1e4ab6238e263847f52, type: 2}
+  - {fileID: 11400000, guid: 0b93e2a0f252f0849a40d22556654f97, type: 2}
+  - {fileID: 11400000, guid: e799127cb1925b541974f034ee41c7e6, type: 2}
+  bossData: {fileID: 11400000, guid: 3dc74ad7ee6d7b645a33f0b2dc5a3b9c, type: 2}
+  combatRoomWeight: 0.7
+  treasureRoomWeight: 0.1
+  eventRoomWeight: 0.2
+  minRoomCount: 12
+  maxRoomCount: 20
+  environmentHintDescription: 
+  floorScalingConstant: 0.15
+  expScalingConstant: 0.1

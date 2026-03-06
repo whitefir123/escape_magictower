@@ -98,6 +98,11 @@ namespace EscapeTheTower
         Assassin    = 1 << 15,  // 刺客
         Support     = 1 << 16,  // 辅助
         HeavyArmor  = 1 << 17,  // 重装
+        Insect      = 1 << 18,  // 虫群
+        Plant       = 1 << 19,  // 植物
+        Mechanical  = 1 << 20,  // 机械
+        Aquatic     = 1 << 21,  // 水生
+        Summoner    = 1 << 22,  // 召唤
     }
 
     /// <summary>

@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_GrandfatherClock
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u8083\u7A46\u843D\u5730\u949F"
+  entityID: grandfather_clock
+  baseMaxHP: 400
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 40
+  baseDEF: 20
+  baseMDEF: 30
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.05
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 4
+  maxHP_Max: 700
+  maxATK_Max: 0
+  maxMATK_Max: 70
+  maxDEF_Max: 40
+  maxMDEF_Max: 50
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 4
+  moveSpeedDescription: 
+  baseExpReward: 22
+  goldDropMin: 8
+  goldDropMax: 18
+  mechanicDescription: "\u65F6\u95F4\u8FDF\u7F13\u51CF\u901F\u5149\u73AF\uFF0C12\u79D2\u540E\u5F3A\u5236\u7729\u6655"
+  immuneToEffects: 0200000001000000
+  onHitEffects:
+  - effectType: 6
+    chance: 1
+    duration: 12
+    valuePerStack: 0.15
+    stacks: 1
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

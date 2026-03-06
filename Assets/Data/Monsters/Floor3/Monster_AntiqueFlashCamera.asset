@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_AntiqueFlashCamera
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u9541\u5149\u7559\u5F71\u673A"
+  entityID: antique_flash_camera
+  baseMaxHP: 200
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 10
+  baseDEF: 15
+  baseMDEF: 15
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.05
+  baseMoveSpeed: 0.6
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 4
+  maxHP_Max: 350
+  maxATK_Max: 0
+  maxMATK_Max: 20
+  maxDEF_Max: 30
+  maxMDEF_Max: 30
+  dodge_Max: 0.05
+  critResist: 0
+  attackInterval: 6
+  moveSpeedDescription: 
+  baseExpReward: 14
+  goldDropMin: 4
+  goldDropMax: 10
+  mechanicDescription: "\u95EA\u5149\u81F4\u76F2+\u6DF1\u5EA6\u7729\u66552.5\u79D2\uFF08\u9700\u9762\u5BF9\uFF09\uFF0C\u80CC\u5BF9\u53EF\u514D\u75AB"
+  immuneToEffects: 0200000001000000
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

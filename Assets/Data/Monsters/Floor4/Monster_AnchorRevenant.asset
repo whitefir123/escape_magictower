@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_AnchorRevenant
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u6C34\u624B\u4EA1\u9B42"
+  entityID: anchor_revenant
+  baseMaxHP: 450
+  baseMaxMP: 0
+  baseATK: 60
+  baseMATK: 0
+  baseDEF: 40
+  baseMDEF: 30
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.4
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 2232321
+  maxHP_Max: 750
+  maxATK_Max: 110
+  maxMATK_Max: 0
+  maxDEF_Max: 70
+  maxMDEF_Max: 50
+  dodge_Max: 0
+  critResist: 0.2
+  attackInterval: 2.5
+  moveSpeedDescription: 
+  baseExpReward: 26
+  goldDropMin: 10
+  goldDropMax: 22
+  mechanicDescription: "\u4EA1\u7075\u91CD\u88C5\uFF0C\u666E\u653B\u9644\u52A0\u6F6E\u6E7F\u72B6\u6001"
+  immuneToEffects: 
+  onHitEffects:
+  - effectType: 6
+    chance: 0.6
+    duration: 3
+    valuePerStack: 0.2
+    stacks: 1
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

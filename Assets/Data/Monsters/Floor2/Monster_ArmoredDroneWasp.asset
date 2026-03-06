@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_ArmoredDroneWasp
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u5B88\u536B\u96C4\u8702"
+  entityID: armored_drone_wasp
+  baseMaxHP: 180
+  baseMaxMP: 0
+  baseATK: 25
+  baseMATK: 0
+  baseDEF: 15
+  baseMDEF: 5
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.05
+  baseMoveSpeed: 0.7
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 270464
+  maxHP_Max: 320
+  maxATK_Max: 55
+  maxMATK_Max: 0
+  maxDEF_Max: 35
+  maxMDEF_Max: 15
+  dodge_Max: 0.15
+  critResist: 0
+  attackInterval: 2
+  moveSpeedDescription: 
+  baseExpReward: 16
+  goldDropMin: 5
+  goldDropMax: 12
+  mechanicDescription: "\u91CD\u88C5\u98DE\u884C\u6606\u866B\uFF0C\u8FDC\u7AEF\u6BD2\u523A\u5F39\u5E55"
+  immuneToEffects: 
+  onHitEffects:
+  - effectType: 1
+    chance: 0.25
+    duration: 3
+    valuePerStack: 2
+    stacks: 1
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

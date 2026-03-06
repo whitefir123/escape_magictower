@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Nun
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u4FEE\u5973"
+  entityID: nun
+  baseMaxHP: 280
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 40
+  baseDEF: 15
+  baseMDEF: 50
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.1
+  baseMoveSpeed: 0.5
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 65544
+  maxHP_Max: 450
+  maxATK_Max: 0
+  maxMATK_Max: 70
+  maxDEF_Max: 30
+  maxMDEF_Max: 80
+  dodge_Max: 0.1
+  critResist: 0
+  attackInterval: 3
+  moveSpeedDescription: 
+  baseExpReward: 20
+  goldDropMin: 6
+  goldDropMax: 14
+  mechanicDescription: "\u5723\u5178\u5E87\u62A4\uFF0C\u5168\u573A\u53CB\u519B\u5957\u7B49\u79BB\u5B50\u5149\u76FE+\u53CD\u5F39\u8FD1\u621830%"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

@@ -30,6 +30,9 @@ namespace EscapeTheTower.Equipment
         public QualityTier quality;        // 品质等级
         public int itemPower;              // iPwr (物品强度)
 
+        [Header("强化")]
+        public int enhanceLevel;            // 强化等级（+0 ~ +∞）
+
         [Header("底座属性1")]
         public StatType baseStat1Type;     // 底座属性1类型 (如 DEF)
         public float baseStat1Base;        // 底座属性1固定基础值
@@ -66,6 +69,14 @@ namespace EscapeTheTower.Equipment
             // --- 步骤1：底座属性合计 ---
             float stat1Total = baseStat1Base + baseStat1QualityBonus;
             float stat2Total = baseStat2Base + baseStat2QualityBonus;
+
+            // --- 步骤1.5：强化乘算（每级 +5% 底座属性） ---
+            if (enhanceLevel > 0)
+            {
+                float enhanceMult = 1f + enhanceLevel * 0.05f;
+                stat1Total *= enhanceMult;
+                stat2Total *= enhanceMult;
+            }
 
             block.Add(baseStat1Type, stat1Total);
             block.Add(baseStat2Type, stat2Total);

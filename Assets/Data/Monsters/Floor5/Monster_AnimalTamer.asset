@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_AnimalTamer
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u9ED1\u5FC3\u9A6F\u517D\u5E08"
+  entityID: animal_tamer
+  baseMaxHP: 350
+  baseMaxMP: 0
+  baseATK: 25
+  baseMATK: 0
+  baseDEF: 25
+  baseMDEF: 30
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.6
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 65544
+  maxHP_Max: 600
+  maxATK_Max: 50
+  maxMATK_Max: 0
+  maxDEF_Max: 45
+  maxMDEF_Max: 50
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 2.5
+  moveSpeedDescription: 
+  baseExpReward: 20
+  goldDropMin: 7
+  goldDropMax: 16
+  mechanicDescription: "\u97AD\u7B56\u53CB\u519B\u83B7\u5F97\u72C2\u5316\u589E\u76CA"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

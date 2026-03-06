@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfefc6d54d1d3dd49bf68d2961e5c187, type: 3}
+  m_Name: Biome_Floor3_clockwork
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.BiomeConfig_SO
+  biomeName: "\u9F7F\u8F6E\u5DE5\u574A"
+  biomeID: clockwork
+  biomeIndex: 3
+  biomeDescription: "\u7B2C3\u5C42 - \u9F7F\u8F6E\u5DE5\u574A"
+  normalMonsterPool:
+  - {fileID: 11400000, guid: e0fc30dc00934dc40977a76d90711735, type: 2}
+  - {fileID: 11400000, guid: d29f737bd2a709f4bb16ff1b2eb51b1c, type: 2}
+  - {fileID: 11400000, guid: 94a440cbd5d874543a91e86da6bf11d7, type: 2}
+  - {fileID: 11400000, guid: a07bece6ca649a148af68ff4c5151aea, type: 2}
+  - {fileID: 11400000, guid: 2ed444befa3ce974b9256791f8f5c1d4, type: 2}
+  - {fileID: 11400000, guid: 74dde0813a2893c4595494807fe651a4, type: 2}
+  - {fileID: 11400000, guid: a5b8220a3aea8ac42a3a496fac70de33, type: 2}
+  - {fileID: 11400000, guid: 2164d9368fdfdee408139edb84ab6e12, type: 2}
+  - {fileID: 11400000, guid: bb56f35dfec138142a7286ed9622a54a, type: 2}
+  bossData: {fileID: 11400000, guid: c00136ffd5ef98244bdb52a6b9dd800f, type: 2}
+  combatRoomWeight: 0.7
+  treasureRoomWeight: 0.1
+  eventRoomWeight: 0.2
+  minRoomCount: 12
+  maxRoomCount: 20
+  environmentHintDescription: 
+  floorScalingConstant: 0.15
+  expScalingConstant: 0.1

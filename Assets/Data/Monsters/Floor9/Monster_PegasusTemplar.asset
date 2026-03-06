@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_PegasusTemplar
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u795E\u6069\u9A91\u58EB"
+  entityID: pegasus_templar
+  baseMaxHP: 700
+  baseMaxMP: 0
+  baseATK: 90
+  baseMATK: 0
+  baseDEF: 70
+  baseMDEF: 50
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.1
+  baseMoveSpeed: 1.1
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 135168
+  maxHP_Max: 1100
+  maxATK_Max: 160
+  maxMATK_Max: 0
+  maxDEF_Max: 110
+  maxMDEF_Max: 80
+  dodge_Max: 0.1
+  critResist: 0
+  attackInterval: 3.5
+  moveSpeedDescription: 
+  baseExpReward: 35
+  goldDropMin: 15
+  goldDropMax: 30
+  mechanicDescription: "\u8D85\u957F\u8DDD\u79BB\u9F99\u67AA\u51B2\u950B\uFF0C\u547D\u4E2D\u5FC5\u66B4+\u6309\u5899\u50F5\u76F4"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_ToxicUrchin
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u6DF1\u6D77\u5DE8\u6BD2\u6D77\u80C6"
+  entityID: toxic_urchin
+  baseMaxHP: 200
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 0
+  baseDEF: 60
+  baseMDEF: 60
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 2097154
+  maxHP_Max: 450
+  maxATK_Max: 0
+  maxMATK_Max: 0
+  maxDEF_Max: 90
+  maxMDEF_Max: 90
+  dodge_Max: 0
+  critResist: 0.5
+  attackInterval: 5
+  moveSpeedDescription: 
+  baseExpReward: 16
+  goldDropMin: 5
+  goldDropMax: 12
+  mechanicDescription: "\u56FA\u5B9A\u6BD2\u96FE+\u8FD1\u6218\u53CD\u4F24\u9644\u52A0\u4E2D\u6BD2"
+  immuneToEffects: 
+  onHitEffects:
+  - effectType: 1
+    chance: 1
+    duration: 5
+    valuePerStack: 4
+    stacks: 2
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

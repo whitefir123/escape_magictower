@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfefc6d54d1d3dd49bf68d2961e5c187, type: 3}
+  m_Name: Biome_Floor5_carnival
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.BiomeConfig_SO
+  biomeName: "\u9A6C\u620F\u56E2"
+  biomeID: carnival
+  biomeIndex: 5
+  biomeDescription: "\u7B2C5\u5C42 - \u9A6C\u620F\u56E2"
+  normalMonsterPool:
+  - {fileID: 11400000, guid: b1047bea4c785dc4baf468232a2a326d, type: 2}
+  - {fileID: 11400000, guid: 043d897f0afebab4893cd60153feb202, type: 2}
+  - {fileID: 11400000, guid: 980cedc814b92904ea5647415341d5a4, type: 2}
+  - {fileID: 11400000, guid: 94304fb61f769824aa292e6813b71c97, type: 2}
+  - {fileID: 11400000, guid: 0ea8216341cec304eb47d9bd35807b9a, type: 2}
+  - {fileID: 11400000, guid: 9de5641ce05de984bb8b3165ec7250bb, type: 2}
+  - {fileID: 11400000, guid: f14da7ac7276be14eb0a079fdbb5554e, type: 2}
+  - {fileID: 11400000, guid: c404dc6898b7ec549baf197d091cb6fc, type: 2}
+  - {fileID: 11400000, guid: 5f3a422106a8b954284145c0351c23ad, type: 2}
+  bossData: {fileID: 11400000, guid: 346cd9f1f463ed146a053197290fe954, type: 2}
+  combatRoomWeight: 0.7
+  treasureRoomWeight: 0.1
+  eventRoomWeight: 0.2
+  minRoomCount: 12
+  maxRoomCount: 20
+  environmentHintDescription: 
+  floorScalingConstant: 0.15
+  expScalingConstant: 0.1

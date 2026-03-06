@@ -315,10 +315,11 @@ namespace EscapeTheTower.Entity
         // =====================================================================
 
         /// <summary>
-        /// DOT 每秒结算（中毒/灼烧/流血）
+        /// DOT 每秒结算（中毒/灼烧/流血/感电）
         /// 中毒：每层每秒固定毒属性真实伤害
         /// 灼烧：每层每秒按目标最大HP百分比的真实伤害
         /// 流血：每层每秒固定物理伤害，移动中伤害翻倍
+        /// 感电（Shock）：每 tick 对自身造成雷伤并溅射周围敌方
         /// </summary>
         private void TickDOT()
         {
@@ -352,6 +353,18 @@ namespace EscapeTheTower.Entity
                             damage *= GameConstants.BLEED_MOVE_MULTIPLIER;
                         dtype = DamageType.Physical;
                         break;
+
+                    case StatusEffectType.Shock:
+                        // 感电连营：对自身造成小额雷伤 + 溅射周围敌方
+                        // 基础伤害 = 固定值（由施加者 ATK 决定，在 ApplyEffect 时写入 ValuePerStack）
+                        // 如果 ValuePerStack == 0，使用默认值 5
+                        float shockDmg = e.ValuePerStack > 0 ? e.ValuePerStack : 5f;
+                        damage = shockDmg;
+                        dtype = DamageType.Magical;
+
+                        // 溅射周围 3 格内的敌方实体（最多 3 个）
+                        TickShockChainDamage(shockDmg, e.ApplierID);
+                        break;
                 }
 
                 if (damage > 0f)
@@ -366,6 +379,39 @@ namespace EscapeTheTower.Entity
                     TakeDamage(result, e.ApplierID);
                     if (!IsAlive) return; // DOT 致死，中断后续结算
                 }
+            }
+        }
+
+        /// <summary>
+        /// 感电连营溅射：搜索周围 3 格内最多 3 个同阵营实体，各造成雷伤
+        /// </summary>
+        private void TickShockChainDamage(float baseDamage, int applierID)
+        {
+            const float CHAIN_RANGE = 3f;
+            const int MAX_CHAIN_TARGETS = 3;
+
+            var allEntities = FindObjectsByType<EntityBase>(FindObjectsSortMode.None);
+            float sqrRange = CHAIN_RANGE * CHAIN_RANGE;
+            int hitCount = 0;
+
+            foreach (var entity in allEntities)
+            {
+                if (hitCount >= MAX_CHAIN_TARGETS) break;
+                if (entity == this || !entity.IsAlive) continue;
+                // 溅射同阵营的其他实体（自身身上有感电 → 伤害扩散给周围同伴）
+                if (entity.Faction != Faction) continue;
+
+                float sqrDist = (entity.transform.position - transform.position).sqrMagnitude;
+                if (sqrDist > sqrRange) continue;
+
+                var chainResult = new DamageResult
+                {
+                    FinalDamage = baseDamage * 0.5f, // 溅射伤害 = 50%
+                    DamageType = DamageType.Magical,
+                    IsCritical = false,
+                };
+                entity.TakeDamage(chainResult, applierID);
+                hitCount++;
             }
         }
 

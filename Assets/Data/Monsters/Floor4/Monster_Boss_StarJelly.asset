@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Boss_StarJelly
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u5DE8\u578B\u6C34\u6BCD"
+  entityID: boss_star_jelly
+  baseMaxHP: 3500
+  baseMaxMP: 0
+  baseATK: 40
+  baseMATK: 80
+  baseDEF: 70
+  baseMDEF: 120
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.1
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 2098304
+  maxHP_Max: 6500
+  maxATK_Max: 70
+  maxMATK_Max: 140
+  maxDEF_Max: 110
+  maxMDEF_Max: 180
+  dodge_Max: 0
+  critResist: 0.2
+  attackInterval: 4
+  moveSpeedDescription: 
+  baseExpReward: 350
+  goldDropMin: 80
+  goldDropMax: 180
+  mechanicDescription: "\u4E5D\u987B\u62A4\u4F5375%\u514D\u4F24\uFF0C\u65AD\u80A2\u55B7\u9EBB\u75F9\u6BD2\u96FE"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 1
+  hasPermUnstoppable: 1

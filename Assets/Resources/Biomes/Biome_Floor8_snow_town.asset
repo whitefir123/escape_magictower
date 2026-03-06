@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfefc6d54d1d3dd49bf68d2961e5c187, type: 3}
+  m_Name: Biome_Floor8_snow_town
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.BiomeConfig_SO
+  biomeName: "\u96EA\u9547"
+  biomeID: snow_town
+  biomeIndex: 8
+  biomeDescription: "\u7B2C8\u5C42 - \u96EA\u9547"
+  normalMonsterPool:
+  - {fileID: 11400000, guid: 7b6e7b68f04487b4186e35fa43d409a1, type: 2}
+  - {fileID: 11400000, guid: bf317e93d45d71b419c32783c192ef85, type: 2}
+  - {fileID: 11400000, guid: 528fd7a262e3d9044911169015525305, type: 2}
+  - {fileID: 11400000, guid: b8dec062604d29b4eb18bcfc79a95ee8, type: 2}
+  - {fileID: 11400000, guid: 4312b710065112f409fd290209ecf2fd, type: 2}
+  - {fileID: 11400000, guid: 0cb0f42a0a5d1b94cac61d4d5c8d3243, type: 2}
+  - {fileID: 11400000, guid: 80e514de91ca898418ecc4b6f6726552, type: 2}
+  - {fileID: 11400000, guid: 655ca5a521d351d4fb70b1e4a0a96b30, type: 2}
+  bossData: {fileID: 11400000, guid: 096777287d3195240a5a004a44c1a921, type: 2}
+  combatRoomWeight: 0.7
+  treasureRoomWeight: 0.1
+  eventRoomWeight: 0.2
+  minRoomCount: 12
+  maxRoomCount: 20
+  environmentHintDescription: 
+  floorScalingConstant: 0.15
+  expScalingConstant: 0.1

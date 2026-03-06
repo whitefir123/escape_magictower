@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfefc6d54d1d3dd49bf68d2961e5c187, type: 3}
+  m_Name: Biome_Floor7_desert
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.BiomeConfig_SO
+  biomeName: "\u6C99\u6D77"
+  biomeID: desert
+  biomeIndex: 7
+  biomeDescription: "\u7B2C7\u5C42 - \u6C99\u6D77"
+  normalMonsterPool:
+  - {fileID: 11400000, guid: 9edeb3d2c67149448941aa28d3616bfe, type: 2}
+  - {fileID: 11400000, guid: b82db2bd2b0c3e84c954cdec38e5d5ce, type: 2}
+  - {fileID: 11400000, guid: fa515c33431801b45afd8911d60141f3, type: 2}
+  - {fileID: 11400000, guid: d384bae8f882a0b48bc6447e91fb3428, type: 2}
+  - {fileID: 11400000, guid: 1f81dda3c75e2d94b94cc83a7e203e3b, type: 2}
+  - {fileID: 11400000, guid: 8fe96ed8eb9399e42b67d329a278f96c, type: 2}
+  - {fileID: 11400000, guid: ce2bef2a60e9462459ad5a5133f702c9, type: 2}
+  bossData: {fileID: 11400000, guid: 14c5601476a5ad549870830d3cc4e3c9, type: 2}
+  combatRoomWeight: 0.7
+  treasureRoomWeight: 0.1
+  eventRoomWeight: 0.2
+  minRoomCount: 12
+  maxRoomCount: 20
+  environmentHintDescription: 
+  floorScalingConstant: 0.15
+  expScalingConstant: 0.1

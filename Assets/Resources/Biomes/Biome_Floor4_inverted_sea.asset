@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfefc6d54d1d3dd49bf68d2961e5c187, type: 3}
+  m_Name: Biome_Floor4_inverted_sea
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.BiomeConfig_SO
+  biomeName: "\u5012\u60AC\u4E4B\u6D77"
+  biomeID: inverted_sea
+  biomeIndex: 4
+  biomeDescription: "\u7B2C4\u5C42 - \u5012\u60AC\u4E4B\u6D77"
+  normalMonsterPool:
+  - {fileID: 11400000, guid: a0fc101e1f75ba347bf2f9aa65170b71, type: 2}
+  - {fileID: 11400000, guid: 84b670a5253be5d4a9534b869b89093c, type: 2}
+  - {fileID: 11400000, guid: 3010504e084663b4fb1c1ad73a296e12, type: 2}
+  - {fileID: 11400000, guid: 141b356a818e3a94abd4c2cbdd7d94e4, type: 2}
+  - {fileID: 11400000, guid: 484eb05b17008ed418b424806bf6a344, type: 2}
+  - {fileID: 11400000, guid: 47939c1784271f645a6d732b6c5fdc60, type: 2}
+  - {fileID: 11400000, guid: 218e2f004fe4c9c4ba2fe399d2138c04, type: 2}
+  - {fileID: 11400000, guid: 3ce55c346b2e54f4086ac3b596fc3f5c, type: 2}
+  bossData: {fileID: 11400000, guid: 6177ee04d52c4f043b8443193d9dcb94, type: 2}
+  combatRoomWeight: 0.7
+  treasureRoomWeight: 0.1
+  eventRoomWeight: 0.2
+  minRoomCount: 12
+  maxRoomCount: 20
+  environmentHintDescription: 
+  floorScalingConstant: 0.15
+  expScalingConstant: 0.1

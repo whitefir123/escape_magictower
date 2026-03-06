@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_AtonementSupplicant
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u8D4E\u7F6A\u8005"
+  entityID: atonement_supplicant
+  baseMaxHP: 450
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 0
+  baseDEF: 10
+  baseMDEF: 10
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.2
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 65544
+  maxHP_Max: 750
+  maxATK_Max: 0
+  maxMATK_Max: 0
+  maxDEF_Max: 20
+  maxMDEF_Max: 20
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 3
+  moveSpeedDescription: 
+  baseExpReward: 24
+  goldDropMin: 8
+  goldDropMax: 18
+  mechanicDescription: "\u82E6\u75DB\u94FE\u63A5\uFF0C\u88AB\u94FE\u602A\u7269\u9501\u88401HP\uFF0C\u81F4\u6B7B\u4F24\u5BB32\u500D\u8F6C\u79FB\u7ED9\u81EA\u5DF1"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

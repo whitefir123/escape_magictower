@@ -434,6 +434,14 @@ namespace EscapeTheTower.Entity.Monster
             var targetEntity = _pursuitTarget.GetComponent<EntityBase>();
             if (targetEntity == null || !targetEntity.IsAlive) return;
 
+            // 致盲检查：致盲状态下普攻必定 Miss
+            // 来源：GameData_Blueprints/02_Status_Ailments.md §8
+            if (StatusEffects != null && StatusEffects.HasEffect(StatusEffectType.Blind))
+            {
+                Debug.Log($"[战斗] {gameObject.name} 处于致盲状态，攻击 Miss！");
+                return;
+            }
+
             // 疲劳加成
             float fatigueMult = _fatigueSystem != null ? _fatigueSystem.GetAtkMultiplier() : 1f;
             float fatiguePen = _fatigueSystem != null ? _fatigueSystem.GetPenBonus() : 0f;
@@ -514,6 +522,13 @@ namespace EscapeTheTower.Entity.Monster
 
             var atkStats = fatiguePen > 0f ? new StatBlock(CurrentStats) : CurrentStats;
             if (fatiguePen > 0f) atkStats.Add(StatType.ArmorPen, fatiguePen);
+
+            // 致盲检查：致盲状态下被动反击也 Miss
+            if (StatusEffects != null && StatusEffects.HasEffect(StatusEffectType.Blind))
+            {
+                Debug.Log($"[战斗] {gameObject.name} 处于致盲状态，反击 Miss！");
+                return;
+            }
 
             // 被动反击：无视攻击间隔，立即打一次
             var counterDamage = DamageCalculator.Calculate(

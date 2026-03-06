@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_BlindEchoFiend
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u76F2\u773C\u5996"
+  entityID: blind_echo_fiend
+  baseMaxHP: 200
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 45
+  baseDEF: 20
+  baseMDEF: 20
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.1
+  baseMoveSpeed: 1
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 8
+  maxHP_Max: 350
+  maxATK_Max: 0
+  maxMATK_Max: 75
+  maxDEF_Max: 35
+  maxMDEF_Max: 35
+  dodge_Max: 0.1
+  critResist: 0
+  attackInterval: 2
+  moveSpeedDescription: 
+  baseExpReward: 16
+  goldDropMin: 5
+  goldDropMax: 12
+  mechanicDescription: "\u9760\u542C\u89C9\u8FA8\u4F4D\uFF0C\u73A9\u5BB6\u8DD1\u52A8/\u6280\u80FD\u89E6\u53D1\u843D\u77F3\u66B4\u51FB"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Mummy
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u6728\u4E43\u4F0A"
+  entityID: mummy
+  baseMaxHP: 350
+  baseMaxMP: 0
+  baseATK: 45
+  baseMATK: 0
+  baseDEF: 25
+  baseMDEF: 15
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.3
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 4097
+  maxHP_Max: 600
+  maxATK_Max: 80
+  maxMATK_Max: 0
+  maxDEF_Max: 45
+  maxMDEF_Max: 30
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 2
+  moveSpeedDescription: 
+  baseExpReward: 18
+  goldDropMin: 6
+  goldDropMax: 14
+  mechanicDescription: "\u53D7\u51FB\u7EF7\u5E26\u65AD\u88C2\u55B7\u5C38\u6BD2\u7C89\u5C18\uFF0C\u6015\u706B"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

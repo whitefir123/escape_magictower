@@ -1,6 +1,6 @@
 # 2026-03-06 综合开发日志
 
-> **摘要**：当日核心工作覆盖三大系统：①战斗引擎集成（DOT/Buff/Debuff/疲劳/元素反应管线全闭合）；②符文三选一全链路打通（资产生成→品质抽取→UI面板+暂停）；③技能系统框架从零搭建（数据驱动架构+流浪剑客全套5技能实装）。
+> **摘要**：当日核心工作覆盖七大系统：①战斗引擎集成（DOT/Buff/Debuff/疲劳/元素反应管线全闭合）；②符文三选一全链路打通（资产生成→品质抽取→UI面板+暂停）；③技能系统框架从零搭建（数据驱动架构+流浪剑客全套5技能实装）；④浮动文字反馈系统（对象池+颜色规范+伤害/治疗/拾取全覆盖）；⑤胜利画面（第9层通关触发）；⑥怪物SO批量导出（2-9层74怪物+8群系BiomeConfig）；⑦楼层怪物池加载修复（FloorTransitionManager按楼层匹配BiomeConfig）。
 
 ## 1. 战斗引擎集成 Phase A1 + A2
 - **DOT 引擎 (EntityBase)**：新增 `TickDOT()` 驱动中毒/灼烧/流血三类持续伤害。中毒为固定真伤，灼烧按最大HP 5%/层/秒，流血移动中翻2.5倍。DOT致死立即中断后续结算。灼烧附带治疗衰减（每层10%上限60%）。
@@ -42,3 +42,38 @@
 | `Editor/RuneAssetGenerator.cs` | 新建：符文SO导出工具 |
 | `UI/RuneSelectionPanel.cs` | 新建：符文三选一面板 |
 | `Data/RuneManager.cs` | 新建：符文池管理+抽取 |
+
+## 4. 浮动文字反馈系统
+- **FloatingTextManager**：纯代码运行时构建，对象池复用。支持 Rise+Fade 动画、暴击弹簧缩放（Spring Scale）。
+- **颜色规范**：玩家伤害红色，怪物伤害白色，元素伤害橙色，治疗绿色，法力蓝色，金币金色，经验淡金色，钥匙对应颜色，Miss 灰色，免疫白色。
+- **格式规范**：伤害统一 `-N`，治疗 `+N`，金币 `+N 金币`。
+- **集成点**：`EntityBase.TakeDamage()`、`EntityBase.Heal()`、`HUDManager.OnItemPickedUp()` 均对接。缓存 `FloatingTextManager` 引用避免 `FindAnyObjectByType`。
+
+## 5. 胜利画面
+- **VictoryScreen**：纯代码构建金色主题 UI（复用 `DeathScreen` 布局思路），显示通关统计。
+- **触发机制**：`MapManager.AdvanceFloor()` 在第 9 层触发 `OnVictoryEvent`。`EventManager.cs` 新增 `OnVictoryEvent` 结构体。
+
+## 6. 怪物 SO 批量导出（2-9 层）
+- **MonsterTag 枚举扩展**：`Enums.cs` 新增 `Insect`/`Plant`/`Mechanical`/`Aquatic`/`Summoner` 五个标签。
+- **MonsterAssetGenerator（Editor 菜单工具）**：一键导出 **74 个 MonsterData_SO + 8 个 BiomeConfig_SO**。严格对照 `04_2~04_9` 蓝图数值。紧凑工厂方法 `M()` 减少重复代码。
+- **怪物统计**：F2花园9+1、F3齿轮9+1、F4深海8+1、F5马戏团9+1、F6矿洞7+1、F7沙漠7+1、F8雪镇8+1、F9圣域7+1。
+- **BiomeConfig 存储路径**：`Assets/Resources/Biomes/`（支持 `Resources.LoadAll` 运行时加载）。
+
+## 7. 楼层怪物池加载修复
+- **问题**：`FloorTransitionManager.SpawnMonstersInRooms()` 始终从 `FloorMonsterConfig_SO`（第1层固定配置）读怪物池，2-9层全走降级到 `Floor1MonsterRegistry`。
+- **修复**：重写为按 `biomeIndex == CurrentFloorLevel` 从 `Resources` 匹配 `BiomeConfig_SO`，读取 `normalMonsterPool` + `bossData`。仅未匹配时降级。
+- **Boss 修复**：不再硬编码 `FallenHeroBossAI`（仅第1层挂载），其余层 Boss 使用 BiomeConfig 的 `bossData`。
+- **MapManager 补丁**：新增 `AutoLoadBiomePoolIfEmpty()` 运行时自动加载 BiomeConfig 到随机池。
+
+## 修改文件清单（续）
+| 文件 | 修改内容 |
+|------|----------|
+| `UI/FloatingTextManager.cs` | 新建：浮动文字系统（对象池+动画） |
+| `UI/VictoryScreen.cs` | 新建：胜利画面 UI |
+| `Core/Enums.cs` | MonsterTag +5 标签 |
+| `Core/EventManager.cs` | +OnVictoryEvent |
+| `EntityBase.cs` | TakeDamage/Heal 对接浮动文字 |
+| `HUDManager.cs` | 拾取物通知重定向浮动文字 |
+| `Map/MapManager.cs` | AdvanceFloor 胜利触发 + AutoLoadBiomePoolIfEmpty |
+| `Map/FloorTransitionManager.cs` | SpawnMonstersInRooms 重写：按楼层匹配 BiomeConfig |
+| `Editor/MonsterAssetGenerator.cs` | 新建：74怪物+8群系 SO 导出工具 |

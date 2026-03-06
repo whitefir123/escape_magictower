@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_ShrimpSoldier
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u867E\u5175"
+  entityID: shrimp_soldier
+  baseMaxHP: 200
+  baseMaxMP: 0
+  baseATK: 30
+  baseMATK: 0
+  baseDEF: 40
+  baseMDEF: 15
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.05
+  baseMoveSpeed: 0.6
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 2101248
+  maxHP_Max: 380
+  maxATK_Max: 55
+  maxMATK_Max: 0
+  maxDEF_Max: 70
+  maxMDEF_Max: 30
+  dodge_Max: 0.05
+  critResist: 0.1
+  attackInterval: 1.8
+  moveSpeedDescription: 
+  baseExpReward: 14
+  goldDropMin: 4
+  goldDropMax: 10
+  mechanicDescription: "\u524D\u7EBF\u70AE\u7070\uFF0C\u6C34\u67AA\u7A81\u523A\u51FB\u9000"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

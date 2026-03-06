@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_ClockworkKnight
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u53D1\u6761\u9A91\u58EB"
+  entityID: clockwork_knight
+  baseMaxHP: 500
+  baseMaxMP: 0
+  baseATK: 50
+  baseMATK: 0
+  baseDEF: 50
+  baseMDEF: 10
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.5
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 135172
+  maxHP_Max: 950
+  maxATK_Max: 110
+  maxMATK_Max: 0
+  maxDEF_Max: 90
+  maxMDEF_Max: 25
+  dodge_Max: 0
+  critResist: 0.3
+  attackInterval: 2.5
+  moveSpeedDescription: 
+  baseExpReward: 30
+  goldDropMin: 12
+  goldDropMax: 28
+  mechanicDescription: "\u7CBE\u82F1\u4FDD\u5B89\uFF0C\u6301\u76FE\u683C\u6321\u6B63\u9762\u7269\u7406\uFF0C\u51B2\u950B\u51FB\u98DE"
+  immuneToEffects: 0200000001000000
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

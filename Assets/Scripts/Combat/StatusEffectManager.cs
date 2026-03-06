@@ -56,6 +56,9 @@ namespace EscapeTheTower.Combat
         /// <summary>免疫的状态效果类型集合</summary>
         private readonly HashSet<StatusEffectType> _immunities = new HashSet<StatusEffectType>();
 
+        /// <summary>防止 ApplyEffect → CheckAndTrigger → ApplyEffect 无限递归</summary>
+        private bool _isProcessingReaction;
+
         /// <summary>所有当前活跃的状态效果（只读视图）</summary>
         public IReadOnlyList<StatusEffectInstance> ActiveEffects => _activeEffects;
 
@@ -198,6 +201,28 @@ namespace EscapeTheTower.Combat
                     ApplierID = applierID,
                 };
                 _activeEffects.Add(newEffect);
+            }
+
+            // 元素反应检测：当施加的状态属于某种元素时，
+            // 检查目标身上是否存在可与之形成反应的前置状态
+            // 使用 _isProcessingReaction 防止递归（反应内部可能再次调用 ApplyEffect）
+            if (!_isProcessingReaction)
+            {
+                var element = StatusEffectToElement(effectType);
+                if (element != ElementType.None)
+                {
+                    _isProcessingReaction = true;
+                    try
+                    {
+                        var targetEntity = GetComponent<EscapeTheTower.Entity.EntityBase>();
+                        int targetID = targetEntity != null ? targetEntity.EntityID : 0;
+                        ElementalReaction.CheckAndTrigger(this, element, targetID, applierID);
+                    }
+                    finally
+                    {
+                        _isProcessingReaction = false;
+                    }
+                }
             }
         }
 
@@ -360,6 +385,13 @@ namespace EscapeTheTower.Combat
                         // 潮湿：清除闪避率
                         block.Set(StatType.Dodge, 0f);
                         break;
+
+                    case StatusEffectType.Weakened:
+                        // 虚弱：每层扣除固定 ATK/MATK（类似破甲/魔碎的降低方式）
+                        float weakReduce = effect.Stacks * effect.ValuePerStack;
+                        block.Add(StatType.ATK, -weakReduce);
+                        block.Add(StatType.MATK, -weakReduce);
+                        break;
                 }
             }
 
@@ -380,6 +412,23 @@ namespace EscapeTheTower.Combat
                 || type == StatusEffectType.Root
                 || type == StatusEffectType.Charm
                 || type == StatusEffectType.Slowed;
+        }
+
+        /// <summary>
+        /// 将状态效果类型映射到对应的元素类型（用于元素反应检测）
+        /// 非元素类状态返回 None
+        /// </summary>
+        private static ElementType StatusEffectToElement(StatusEffectType type)
+        {
+            switch (type)
+            {
+                case StatusEffectType.Burn:     return ElementType.Fire;
+                case StatusEffectType.Wet:      return ElementType.Water;
+                case StatusEffectType.Frozen:   return ElementType.Ice;
+                case StatusEffectType.Shock:    return ElementType.Lightning;
+                case StatusEffectType.Poison:   return ElementType.Poison;
+                default:                        return ElementType.None;
+            }
         }
     }
 }

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Boss_QueenBee
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u63D0\u6CF0\u59AE\u5A05\xB7\u8702\u540E"
+  entityID: boss_queen_bee
+  baseMaxHP: 6000
+  baseMaxMP: 0
+  baseATK: 40
+  baseMATK: 40
+  baseDEF: 35
+  baseMDEF: 35
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.1
+  baseMoveSpeed: 0.6
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 4457536
+  maxHP_Max: 9500
+  maxATK_Max: 80
+  maxMATK_Max: 80
+  maxDEF_Max: 60
+  maxMDEF_Max: 60
+  dodge_Max: 0.1
+  critResist: 0.1
+  attackInterval: 2.5
+  moveSpeedDescription: 
+  baseExpReward: 200
+  goldDropMin: 50
+  goldDropMax: 120
+  mechanicDescription: "\u53EC\u5524\u6D41\u6BCD\u4F53\uFF0C\u6BCF15\u79D2\u53EC\u5524\u8702\u7FA4\uFF0C\u8D39\u6D1B\u8499\u6807\u8BB0\u9501\u5B9A\u8FFD\u6740"
+  immuneToEffects: 08000000
+  onHitEffects: []
+  hasCCDiminishing: 1
+  hasPermUnstoppable: 0

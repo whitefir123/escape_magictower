@@ -18,6 +18,7 @@ using UnityEngine.InputSystem;
 using EscapeTheTower.Core;
 using EscapeTheTower.Data;
 using EscapeTheTower.Entity.Hero;
+using EscapeTheTower.Entity.Monster;
 using EscapeTheTower.Map;
 
 namespace EscapeTheTower.UI
@@ -50,6 +51,11 @@ namespace EscapeTheTower.UI
 
         // === 浮动提示 ===
         private Transform _canvasTransform;
+
+        // === 迷你地图 + Boss 血条 ===
+        private MinimapUI _minimapUI;
+        private BossHPBarUI _bossHPBar;
+        private bool _bossBarTriggered; // 防止同一 Boss 房重复触发
 
         // =====================================================================
         //  生命周期
@@ -190,6 +196,14 @@ namespace EscapeTheTower.UI
             floorRect.anchoredPosition = new Vector2(-20, -20);
 
             Debug.Log("[HUDManager] HUD UI 构建完成（HP/MP/怒气/经验/钥匙/楼层）。");
+
+            // --- 迷你地图 ---
+            _minimapUI = gameObject.AddComponent<MinimapUI>();
+            _minimapUI.Initialize(canvasObj.transform);
+
+            // --- Boss 血条 ---
+            _bossHPBar = gameObject.AddComponent<BossHPBarUI>();
+            _bossHPBar.Initialize(canvasObj.transform);
         }
 
         /// <summary>
@@ -334,6 +348,30 @@ namespace EscapeTheTower.UI
                 if (_floorText != null)
                     _floorText.text = $"第 {_displayedFloorLevel} 层";
             }
+
+            // --- Boss 血条自动检测 ---
+            TryDetectBoss();
+        }
+
+        /// <summary>
+        /// 检测场景中的 Boss 怪物，自动激活 Boss 血条
+        /// </summary>
+        private void TryDetectBoss()
+        {
+            if (_bossHPBar == null || _bossBarTriggered) return;
+
+            // 查找场景中所有 MonsterBase，寻找 Boss 标记
+            var monsters = FindObjectsByType<MonsterBase>(FindObjectsSortMode.None);
+            foreach (var monster in monsters)
+            {
+                if (monster.Tags.HasFlag(MonsterTag.Boss) &&
+                    monster.CurrentStats.Get(StatType.HP) > 0)
+                {
+                    _bossHPBar.TrackBoss(monster);
+                    _bossBarTriggered = true;
+                    return;
+                }
+            }
         }
 
         /// <summary>
@@ -356,6 +394,9 @@ namespace EscapeTheTower.UI
             _displayedFloorLevel = evt.FloorNumber;
             if (_floorText != null)
                 _floorText.text = $"第 {evt.FloorNumber} 层";
+
+            // 切层时重置 Boss 血条检测标记
+            _bossBarTriggered = false;
         }
 
         /// <summary>拾取物品时显示飘字（通过 FloatingTextManager 显示对应颜色）</summary>

@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18ce6ee642223a24faabd36c501adcea, type: 3}
+  m_Name: SetResonance_Berserker
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Equipment.SetResonance.SetResonanceDefinition_SO
+  setNameCN: "\u72C2\u6218\u58EB\u4E4B\u6012"
+  setNameEN: Fury of the Berserker
+  description: "\u7269\u7406\u7CFB\u6781\u901F\u5438\u8840\u6D41"
+  slotRequirements:
+  - slot: 0
+    affixOption1: "\u91CD\u5203\u7684"
+    affixOption2: "\u2026\u4E4B\u5438\u8840"
+  - slot: 1
+    affixOption1: "\u58EE\u5BB9\u7684"
+    affixOption2: "\u2026\u4E4B\u81EA\u6108"
+  - slot: 2
+    affixOption1: "\u575A\u97E7\u7684"
+    affixOption2: "\u2026\u4E4B\u53CD\u4F24"
+  - slot: 3
+    affixOption1: "\u575A\u56FA\u7684"
+    affixOption2: "\u2026\u4E4B\u51CFCD"
+  - slot: 4
+    affixOption1: "\u95EA\u907F\u7684"
+    affixOption2: "\u2026\u4E4B\u79FB\u901F"
+  - slot: 5
+    affixOption1: "\u5FC5\u7206\u7684"
+    affixOption2: "\u2026\u4E4B\u72C2\u529B"
+  parameters:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  passiveClassName: EscapeTheTower.Equipment.SetResonance.Passives.BerserkerSetPassive

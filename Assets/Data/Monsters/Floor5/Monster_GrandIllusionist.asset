@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_GrandIllusionist
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u5927\u9B54\u672F\u5E08"
+  entityID: grand_illusionist
+  baseMaxHP: 250
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 45
+  baseDEF: 20
+  baseMDEF: 40
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.1
+  baseMoveSpeed: 0.6
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 4210696
+  maxHP_Max: 450
+  maxATK_Max: 0
+  maxMATK_Max: 85
+  maxDEF_Max: 35
+  maxMDEF_Max: 70
+  dodge_Max: 0.1
+  critResist: 0
+  attackInterval: 4
+  moveSpeedDescription: 
+  baseExpReward: 24
+  goldDropMin: 8
+  goldDropMax: 18
+  mechanicDescription: "\u767D\u9E3D\u620F\u6CD5+\u70DF\u96FE\u95EA\u73B0\u8FDC\u8DDD\u98CE\u7B5D"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

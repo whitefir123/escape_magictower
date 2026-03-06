@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18ce6ee642223a24faabd36c501adcea, type: 3}
+  m_Name: SetResonance_Summoner
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Equipment.SetResonance.SetResonanceDefinition_SO
+  setNameCN: "\u53EC\u5524\u4F7F\u7684\u4EEA\u5178"
+  setNameEN: Ritual of the Summoner
+  description: "\u4E07\u7075\u957F\u6CB3\u7EDF\u5FA1\u5957\uFF08\u5F85\u53EC\u5524\u7269\u7CFB\u7EDF\uFF09"
+  slotRequirements:
+  - slot: 0
+    affixOption1: "\u81F4\u547D\u7684"
+    affixOption2: "\u2026\u4E4B\u65A9\u6740"
+  - slot: 1
+    affixOption1: "\u58EE\u5BB9\u7684"
+    affixOption2: "\u2026\u4E4B\u51CFCD"
+  - slot: 2
+    affixOption1: "\u6297\u9B54\u7684"
+    affixOption2: "\u2026\u4E4B\u81EA\u6108"
+  - slot: 3
+    affixOption1: "\u95EA\u907F\u7684"
+    affixOption2: "\u2026\u4E4B\u8D2A\u5A6A"
+  - slot: 4
+    affixOption1: "\u95EA\u907F\u7684"
+    affixOption2: "\u2026\u4E4B\u79FB\u901F"
+  - slot: 5
+    affixOption1: "\u5FC5\u7206\u7684"
+    affixOption2: "\u2026\u4E4B\u5904\u51B3"
+  parameters:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  passiveClassName: EscapeTheTower.Equipment.SetResonance.Passives.SummonerSetPassive

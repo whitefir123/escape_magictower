@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_SunCultist
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u70C8\u9633\u796D\u53F8"
+  entityID: sun_cultist
+  baseMaxHP: 250
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 50
+  baseDEF: 15
+  baseMDEF: 45
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.05
+  baseMoveSpeed: 0.3
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 16392
+  maxHP_Max: 450
+  maxATK_Max: 0
+  maxMATK_Max: 90
+  maxDEF_Max: 30
+  maxMDEF_Max: 75
+  dodge_Max: 0.05
+  critResist: 0
+  attackInterval: 4
+  moveSpeedDescription: 
+  baseExpReward: 22
+  goldDropMin: 7
+  goldDropMax: 16
+  mechanicDescription: "\u70C8\u9633\u805A\u7126\u8DDF\u8E2A\u5149\u5708\uFF0C\u7206\u53D1\u5149\u67F1+\u81F4\u76F2"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

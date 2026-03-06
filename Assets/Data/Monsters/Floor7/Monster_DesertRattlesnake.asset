@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_DesertRattlesnake
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u6C99\u6F20\u54CD\u5C3E\u86C7"
+  entityID: desert_rattlesnake
+  baseMaxHP: 100
+  baseMaxMP: 0
+  baseATK: 25
+  baseMATK: 0
+  baseDEF: 10
+  baseMDEF: 10
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.15
+  baseMoveSpeed: 0.9
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 32770
+  maxHP_Max: 180
+  maxATK_Max: 45
+  maxMATK_Max: 0
+  maxDEF_Max: 20
+  maxMDEF_Max: 20
+  dodge_Max: 0.15
+  critResist: 0
+  attackInterval: 1.2
+  moveSpeedDescription: 
+  baseExpReward: 10
+  goldDropMin: 3
+  goldDropMax: 8
+  mechanicDescription: "\u547D\u4E2D\u5FC5\u4E2D\u6BD2\uFF0C\u4F53\u578B\u7EC6\u5C0F\u96BE\u547D\u4E2D"
+  immuneToEffects: 
+  onHitEffects:
+  - effectType: 1
+    chance: 1
+    duration: 4
+    valuePerStack: 3
+    stacks: 1
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

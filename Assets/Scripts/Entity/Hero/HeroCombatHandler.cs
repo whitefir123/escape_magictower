@@ -121,17 +121,12 @@ namespace EscapeTheTower.Entity.Hero
                           $"伤害={damageResult.FinalDamage:F1}" +
                           (damageResult.IsCritical ? " 【暴击！】" : ""));
 
-                // 元素反应预埋（当前普攻 ElementType.None，技能系统接入后生效）
-                if (damageResult.ElementType != ElementType.None)
-                {
-                    var monsterStatus = monster.StatusEffects;
-                    if (monsterStatus != null)
-                    {
-                        ElementalReaction.CheckAndTrigger(
-                            monsterStatus, damageResult.ElementType,
-                            monster.EntityID, _hero.EntityID);
-                    }
-                }
+                // 元素反应说明：
+                // 反应触发已统一由 StatusEffectManager.ApplyEffect() 内部自动检测，
+                // 当怪物的 OnHitEffect 或技能系统给目标施加元素状态时会自动判定反应。
+                // 此处不再显式调用 CheckAndTrigger，避免双触发风险。
+                // 未来技能系统如需在伤害计算时使用反应倍率（蒸发/融化），
+                // 应在技能的 Execute 逻辑中单独处理。
             }
             else
             {

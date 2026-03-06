@@ -101,6 +101,9 @@ namespace EscapeTheTower.Map
             _usedBiomes.Clear();
             _nextRoomID = 1;
 
+            // 如果 Inspector 未手动拖入随机池，自动从 Resources 加载
+            AutoLoadBiomePoolIfEmpty();
+
             GenerateFloor(darkDungeonBiome);
 
             // 广播进入新楼层事件
@@ -315,12 +318,42 @@ namespace EscapeTheTower.Map
         /// </summary>
         private BiomeConfig_SO PickRandomBiome()
         {
-            var available = randomBiomePool.FindAll(b => !_usedBiomes.Contains(b));
+            // 兜底：如果池子为空，尝试运行时加载
+            AutoLoadBiomePoolIfEmpty();
+
+            var available = randomBiomePool.FindAll(b => b != null && !_usedBiomes.Contains(b));
             if (available.Count == 0) return null;
 
             var picked = available[Random.Range(0, available.Count)];
             _usedBiomes.Add(picked);
             return picked;
+        }
+
+        /// <summary>
+        /// 如果 Inspector 的 randomBiomePool 为空，自动从 Resources 目录加载全部 BiomeConfig SO
+        /// </summary>
+        private void AutoLoadBiomePoolIfEmpty()
+        {
+            if (randomBiomePool != null && randomBiomePool.Count > 0) return;
+
+            var loaded = Resources.LoadAll<BiomeConfig_SO>("");
+            if (loaded == null || loaded.Length == 0)
+            {
+                Debug.LogWarning("[MapManager] Resources 中未找到 BiomeConfig SO，请将 BiomeConfig 放入 Resources 目录。");
+                return;
+            }
+
+            randomBiomePool = new List<BiomeConfig_SO>();
+            foreach (var biome in loaded)
+            {
+                // 排除第一层（darkDungeonBiome 由专门字段管理）
+                if (darkDungeonBiome != null && biome == darkDungeonBiome) continue;
+                // 排除 biomeIndex == 1 的（即暗黑地牢）
+                if (biome.biomeIndex <= 1) continue;
+                randomBiomePool.Add(biome);
+            }
+
+            Debug.Log($"[MapManager] ✅ 自动加载 {randomBiomePool.Count} 个 BiomeConfig SO 到随机池。");
         }
 
         // =====================================================================

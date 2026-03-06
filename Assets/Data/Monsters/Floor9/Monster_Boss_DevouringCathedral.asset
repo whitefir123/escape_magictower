@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Boss_DevouringCathedral
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u5927\u6559\u5802"
+  entityID: boss_devouring_cathedral
+  baseMaxHP: 6000
+  baseMaxMP: 0
+  baseATK: 150
+  baseMATK: 120
+  baseDEF: 120
+  baseMDEF: 120
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 1028
+  maxHP_Max: 9500
+  maxATK_Max: 250
+  maxMATK_Max: 200
+  maxDEF_Max: 180
+  maxMDEF_Max: 180
+  dodge_Max: 0
+  critResist: 0.5
+  attackInterval: 3
+  moveSpeedDescription: 
+  baseExpReward: 800
+  goldDropMin: 200
+  goldDropMax: 500
+  mechanicDescription: "\u6D3B\u4F53\u5723\u6240\uFF0C\u5899\u58C1\u6324\u538B+\u5341\u5B57\u5C04\u7EBF+\u5F3A\u9178\u80C3\u6DB2\u6CBC\u6CFD"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 1
+  hasPermUnstoppable: 1

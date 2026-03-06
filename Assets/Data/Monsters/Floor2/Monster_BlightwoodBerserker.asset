@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_BlightwoodBerserker
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u67AF\u6728\u72C2\u6218\u58EB"
+  entityID: blightwood_berserker
+  baseMaxHP: 250
+  baseMaxMP: 0
+  baseATK: 35
+  baseMATK: 0
+  baseDEF: 15
+  baseMDEF: 5
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.6
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 528448
+  maxHP_Max: 450
+  maxATK_Max: 80
+  maxMATK_Max: 0
+  maxDEF_Max: 25
+  maxMDEF_Max: 15
+  dodge_Max: 0
+  critResist: 0
+  attackInterval: 1.5
+  moveSpeedDescription: 
+  baseExpReward: 18
+  goldDropMin: 5
+  goldDropMax: 14
+  mechanicDescription: "\u8840\u8D8A\u4F4E\u653B\u8D8A\u9AD8\uFF08\u6700\u9AD81.5\u500D\uFF09\uFF0C\u9700\u9AD8\u7206\u53D1\u79D2\u6740"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

@@ -306,48 +306,59 @@ namespace EscapeTheTower.Map
 
         private void SpawnMonstersInRooms()
         {
-            // 优先从 SO 资产读取，降级兜底到程序化注册
-            MonsterData_SO[] registry;
-            MonsterData_SO bossData;
+            // ── 1. 获取当前楼层的怪物池 ──
+            // 优先从 Resources/Biomes/ 加载对应 BiomeConfig_SO
+            MonsterData_SO[] registry = null;
+            MonsterData_SO bossData = null;
 
-            if (floorConfig != null && floorConfig.normalMonsters != null && floorConfig.normalMonsters.Length > 0)
+            var biomeConfigs = Resources.LoadAll<BiomeConfig_SO>("");
+            BiomeConfig_SO currentBiome = null;
+            foreach (var biome in biomeConfigs)
             {
-                // 过滤掉可能因资产引用丢失而变为 null 的条目
+                if (biome.biomeIndex == CurrentFloorLevel)
+                {
+                    currentBiome = biome;
+                    break;
+                }
+            }
+
+            if (currentBiome != null && currentBiome.normalMonsterPool != null && currentBiome.normalMonsterPool.Count > 0)
+            {
+                // 从 BiomeConfig 读取怪物池
+                var validMonsters = currentBiome.normalMonsterPool.FindAll(m => m != null);
+                if (validMonsters.Count > 0)
+                {
+                    registry = validMonsters.ToArray();
+                    bossData = currentBiome.bossData;
+                    Debug.Log($"[FloorTransition] 从 BiomeConfig '{currentBiome.biomeName}' 加载怪物池（{registry.Length} 种）");
+                }
+            }
+
+            // 降级：尝试 FloorMonsterConfig_SO（旧的第1层配置）
+            if (registry == null && floorConfig != null && floorConfig.normalMonsters != null)
+            {
                 var validMonsters = System.Array.FindAll(floorConfig.normalMonsters, m => m != null);
                 if (validMonsters.Length > 0)
                 {
                     registry = validMonsters;
                     bossData = floorConfig.bossData;
-                    Debug.Log($"[FloorTransition] 从 SO 资产加载怪物池（{registry.Length} 种）");
-                }
-                else
-                {
-                    // SO 资产存在但所有引用丢失，降级
-#pragma warning disable CS0618
-                    registry = Floor1MonsterRegistry.GetAllNormalMonsters();
-                    bossData = Floor1MonsterRegistry.GetBossData();
-#pragma warning restore CS0618
-                    Debug.LogWarning("[FloorTransition] floorConfig 怪物引用全部为 null，降级使用 Floor1MonsterRegistry");
+                    Debug.Log($"[FloorTransition] 从 FloorMonsterConfig SO 加载怪物池（{registry.Length} 种）");
                 }
             }
-            else
+
+            // 最终降级：程序化注册（第1层硬编码兜底）
+            if (registry == null)
             {
-                // 降级兜底：使用程序化注册（floorConfig 未配置时）
-#pragma warning disable CS0618 // Obsolete 降级兜底，预期行为
+#pragma warning disable CS0618
                 registry = Floor1MonsterRegistry.GetAllNormalMonsters();
                 bossData = Floor1MonsterRegistry.GetBossData();
 #pragma warning restore CS0618
-                Debug.LogWarning("[FloorTransition] floorConfig 未配置，降级使用 Floor1MonsterRegistry");
+                Debug.LogWarning("[FloorTransition] 未找到楼层怪物配置，降级使用 Floor1MonsterRegistry");
             }
+
             var tracker = RoomTracker.Instance;
-
-            // 使用楼层种子驱动的随机数（保证同种子可复现）
             var rng = new System.Random(_resolvedBaseSeed + CurrentFloorLevel * 1000 + 7);
-
-            // 精英突变概率：基础5% + 每层+5%
-            // 来源：GameData_Blueprints/04_01_Monster_Spawn_Logic.md §二
             float eliteChance = 0.05f + 0.05f * (CurrentFloorLevel - 1);
-
             int totalMonstersSpawned = 0;
 
             foreach (var room in CurrentFloorGrid.Rooms)
@@ -355,14 +366,20 @@ namespace EscapeTheTower.Map
                 // 出生房间不放怪物
                 if (room.Center == CurrentFloorGrid.SpawnPoint) continue;
 
-                // Boss 房：生成 Boss 在楼梯附近
+                // Boss 房：从 BiomeConfig 读取 Boss 数据
                 if (room.Type == RoomType.Boss && spawnBoss && bossData != null)
                 {
                     var stairsPos = CurrentFloorGrid.StairsPoint;
                     Vector3 bossPos = new Vector3(stairsPos.x, stairsPos.y, 0f);
-                    var bossObj = SpawnMonster(bossData, bossPos, "Boss_堕落勇士", rng, false, 1f);
+                    string bossName = $"Boss_{bossData.entityName}";
+                    var bossObj = SpawnMonster(bossData, bossPos, bossName, rng, false, 1f);
                     bossObj.transform.localScale = Vector3.one * 1.5f;
-                    bossObj.AddComponent<FallenHeroBossAI>();
+
+                    // 仅第 1 层挂载 FallenHeroBossAI（其他层的 Boss AI 待后续实装）
+                    if (CurrentFloorLevel == 1 && bossObj.GetComponent<FallenHeroBossAI>() == null)
+                    {
+                        bossObj.AddComponent<FallenHeroBossAI>();
+                    }
 
                     var bossMon = bossObj.GetComponent<MonsterBase>();
                     bossMon.PatrolOrigin = stairsPos;
@@ -374,11 +391,9 @@ namespace EscapeTheTower.Map
                 // 战斗房按面积密度生成怪物
                 if (room.Type != RoomType.Combat) continue;
 
-                // 怪物数量 = clamp(floor(面积 / 15), 1, 5)
                 int roomArea = room.Bounds.width * room.Bounds.height;
                 int monsterCount = Mathf.Clamp(roomArea / 15, 1, 5);
 
-                // 收集房间内可用的 RoomFloor 格子（排除中心 ±1 格避免重叠）
                 var availablePositions = new System.Collections.Generic.List<Vector2Int>();
                 for (int x = room.Bounds.x; x < room.Bounds.xMax; x++)
                 {
@@ -400,14 +415,10 @@ namespace EscapeTheTower.Map
 
                 for (int m = 0; m < monsterCount && m < availablePositions.Count; m++)
                 {
-                    // 随机选择怪物类型
                     var monsterData = registry[rng.Next(registry.Length)];
                     var spawnPos = availablePositions[m];
                     Vector3 pos = new Vector3(spawnPos.x, spawnPos.y, 0f);
 
-                    // 精英突变检定
-                    // 来源：04_01_Monster_Spawn_Logic.md §二
-                    // 概率=5%+5%*(层数-1)，属性倍率3~5x，体积1.5x
                     bool isElite = rng.NextDouble() < eliteChance;
                     float eliteMult = isElite ? (3f + (float)rng.NextDouble() * 2f) : 1f;
 

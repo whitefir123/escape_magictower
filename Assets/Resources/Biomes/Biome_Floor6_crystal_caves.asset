@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfefc6d54d1d3dd49bf68d2961e5c187, type: 3}
+  m_Name: Biome_Floor6_crystal_caves
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.BiomeConfig_SO
+  biomeName: "\u6C34\u6676\u77FF\u6D1E"
+  biomeID: crystal_caves
+  biomeIndex: 6
+  biomeDescription: "\u7B2C6\u5C42 - \u6C34\u6676\u77FF\u6D1E"
+  normalMonsterPool:
+  - {fileID: 11400000, guid: 929da572d16bdc349baa084262a5fb5a, type: 2}
+  - {fileID: 11400000, guid: af743dfc51d32854185c865e03c37a4b, type: 2}
+  - {fileID: 11400000, guid: b6db7bb866f1b5f4e83313e39bfbc559, type: 2}
+  - {fileID: 11400000, guid: 4afbd5037d70c494dbe9f8c554e6d260, type: 2}
+  - {fileID: 11400000, guid: 5d9d54d7d59216c4cb381a09ff7477f2, type: 2}
+  - {fileID: 11400000, guid: 0d291e66e20530547ae14030e17f0892, type: 2}
+  - {fileID: 11400000, guid: fb3929b423164a34d9e1f9793ad2c35d, type: 2}
+  bossData: {fileID: 11400000, guid: 6b239d3451b5fe14a8fbe07d392faf97, type: 2}
+  combatRoomWeight: 0.7
+  treasureRoomWeight: 0.1
+  eventRoomWeight: 0.2
+  minRoomCount: 12
+  maxRoomCount: 20
+  environmentHintDescription: 
+  floorScalingConstant: 0.15
+  expScalingConstant: 0.1

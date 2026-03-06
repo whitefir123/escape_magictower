@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_FloraFairy
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u82B1\u4ED9\u5B50"
+  entityID: flora_fairy
+  baseMaxHP: 100
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 15
+  baseDEF: 0
+  baseMDEF: 25
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.05
+  baseMoveSpeed: 0.7
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 65728
+  maxHP_Max: 180
+  maxATK_Max: 0
+  maxMATK_Max: 30
+  maxDEF_Max: 10
+  maxMDEF_Max: 45
+  dodge_Max: 0.15
+  critResist: 0
+  attackInterval: 3.5
+  moveSpeedDescription: 
+  baseExpReward: 18
+  goldDropMin: 6
+  goldDropMax: 14
+  mechanicDescription: "\u4F18\u5148\u8F85\u52A9\u65BD\u6CD5\u8005\uFF0C\u4E3A\u8840\u91CF\u6700\u4F4E\u7684\u53CB\u519B\u56DE\u8840\u6216\u52A0\u76FE"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

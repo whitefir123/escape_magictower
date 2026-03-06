@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Boss_Sphinx
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u72EE\u8EAB\u4EBA\u9762\u50CF"
+  entityID: boss_sphinx
+  baseMaxHP: 3000
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 80
+  baseDEF: 100
+  baseMDEF: 80
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 1028
+  maxHP_Max: 4500
+  maxATK_Max: 0
+  maxMATK_Max: 130
+  maxDEF_Max: 150
+  maxMDEF_Max: 120
+  dodge_Max: 0
+  critResist: 0.5
+  attackInterval: 6
+  moveSpeedDescription: 
+  baseExpReward: 500
+  goldDropMin: 100
+  goldDropMax: 250
+  mechanicDescription: "\u8C1C\u8BEDBoss\uFF0C\u7B54\u5BF9\u53CD\u566C\u7834\u9632\uFF0C\u7B54\u9519\u6CD5\u8001\u5929\u7F5A\u5DE8\u96F7"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 1
+  hasPermUnstoppable: 1

@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_BalancingLion
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u72EC\u8F6E\u72EE\u5B50"
+  entityID: balancing_lion
+  baseMaxHP: 800
+  baseMaxMP: 0
+  baseATK: 80
+  baseMATK: 0
+  baseDEF: 60
+  baseMDEF: 20
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0.4
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 131074
+  maxHP_Max: 1300
+  maxATK_Max: 140
+  maxMATK_Max: 0
+  maxDEF_Max: 95
+  maxMDEF_Max: 40
+  dodge_Max: 0
+  critResist: 0.2
+  attackInterval: 3
+  moveSpeedDescription: 
+  baseExpReward: 35
+  goldDropMin: 15
+  goldDropMax: 30
+  mechanicDescription: "\u76F4\u7EBF\u52A0\u901F\u51B2\u649E\u78BE\u538B\uFF0C\u649E\u5899\u957F\u786C\u76F4"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

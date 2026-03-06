@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_Boss_PrismaCore
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u68F1\u6838"
+  entityID: boss_prisma_core
+  baseMaxHP: 2800
+  baseMaxMP: 0
+  baseATK: 0
+  baseMATK: 100
+  baseDEF: 80
+  baseMDEF: 80
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0
+  baseMoveSpeed: 0
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 1040
+  maxHP_Max: 4000
+  maxATK_Max: 0
+  maxMATK_Max: 160
+  maxDEF_Max: 120
+  maxMDEF_Max: 120
+  dodge_Max: 0
+  critResist: 0.3
+  attackInterval: 5
+  moveSpeedDescription: 
+  baseExpReward: 500
+  goldDropMin: 100
+  goldDropMax: 250
+  mechanicDescription: "\u6C34\u6676Boss\uFF0C8000\u62A4\u76FE\u9700\u53CD\u5149\u673A\u5236\u7834\u9664\uFF0C\u4E03\u5F69\u5149\u6CE2\u6D17\u5730"
+  immuneToEffects: 
+  onHitEffects: []
+  hasCCDiminishing: 1
+  hasPermUnstoppable: 1

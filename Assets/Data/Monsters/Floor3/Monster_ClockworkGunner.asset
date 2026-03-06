@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cefb1933dfe44ec4d90160f50eb0abbe, type: 3}
+  m_Name: Monster_ClockworkGunner
+  m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Data.MonsterData_SO
+  entityName: "\u53D1\u6761\u673A\u70AE\u624B"
+  entityID: clockwork_gunner
+  baseMaxHP: 220
+  baseMaxMP: 0
+  baseATK: 18
+  baseMATK: 0
+  baseDEF: 25
+  baseMDEF: 15
+  baseCritRate: 0.05
+  baseCritMultiplier: 1.5
+  baseArmorPen: 0
+  baseMagicPen: 0
+  baseDodge: 0.05
+  baseMoveSpeed: 0.3
+  baseAttackSpeed: 1
+  baseMaxRage: 100
+  baseManaRegen: 0
+  tags: 8196
+  maxHP_Max: 380
+  maxATK_Max: 35
+  maxMATK_Max: 0
+  maxDEF_Max: 45
+  maxMDEF_Max: 25
+  dodge_Max: 0.05
+  critResist: 0
+  attackInterval: 0.5
+  moveSpeedDescription: 
+  baseExpReward: 14
+  goldDropMin: 4
+  goldDropMax: 10
+  mechanicDescription: "\u7AD9\u6869\u52A0\u7279\u6797\u626B\u5C04\uFF0C\u5C04\u51FB\u65F6\u65E0\u6CD5\u79FB\u52A8"
+  immuneToEffects: 0200000001000000
+  onHitEffects: []
+  hasCCDiminishing: 0
+  hasPermUnstoppable: 0

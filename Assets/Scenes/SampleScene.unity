@@ -366,6 +366,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EscapeTheTower.Equipment.HeroEquipmentManager
   _inventoryCapacity: 150
+  _setDefinitions:
+  - {fileID: 11400000, guid: 37750916320c47e4eb49415b8535e713, type: 2}
+  - {fileID: 11400000, guid: 21e7291929224a74492ebe5d9c6fe00c, type: 2}
+  - {fileID: 11400000, guid: 33a601ba2d0d67c47bd995e064aa544e, type: 2}
+  - {fileID: 11400000, guid: 733c166f12b19d4449837dd3ae49a9ab, type: 2}
+  - {fileID: 11400000, guid: 5d9b9d46b8989fd44a9de99032d627d3, type: 2}
+  - {fileID: 11400000, guid: 70d9ff3b9d90b8347abc035380b9d253, type: 2}
+  - {fileID: 11400000, guid: e21ea108ea78cd24da2639d45d3f0614, type: 2}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
