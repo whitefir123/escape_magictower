@@ -130,6 +130,15 @@ namespace EscapeTheTower.Map
             var config = BuildFloorConfig(CurrentFloorLevel);
             CurrentFloorGrid = FloorGenerator.Generate(mapWidth, mapHeight, seed, config);
 
+            // ── 7.5 同步地图数据到 MapManager ──
+            // MapManager 原本自己生成地图（不同种子），导致房间坐标不一致。
+            // 现在将实际使用的 FloorGrid 同步给 MapManager，确保小地图等系统正确。
+            var mapMgr = FindAnyObjectByType<MapManager>();
+            if (mapMgr != null)
+            {
+                mapMgr.SyncWithGrid(CurrentFloorGrid, CurrentFloorLevel);
+            }
+
             // ── 8. 渲染新地图 ──
             _floorRenderer.RenderFloor(CurrentFloorGrid);
 

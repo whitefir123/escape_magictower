@@ -85,6 +85,7 @@ namespace EscapeTheTower.Map
             Width = grid.Width;
             Height = grid.Height;
             _lastPlayerPos = new Vector2Int(-999, -999);
+            _lastNotifiedRoomId = 0;
 
             // 全部初始化为 Unseen
             VisibilityMap = new VisibilityState[Width, Height];
@@ -145,12 +146,24 @@ namespace EscapeTheTower.Map
         /// <summary>
         /// 曼哈顿圆形揭示：以 center 为中心，radius 为半径
         /// </summary>
+        private MapManager _cachedMapManager;
+        private int _lastNotifiedRoomId;
+
         private void RevealAroundPlayer(Vector2Int center, int radius)
         {
             // 判断玩家当前所在房间（0=走廊）
             int playerRoomId = 0;
             if (_grid != null && _grid.InBounds(center.x, center.y))
                 playerRoomId = _grid.RoomMap[center.x, center.y];
+
+            // === 通知 MapManager 玩家进入了新房间 ===
+            if (playerRoomId > 0 && playerRoomId != _lastNotifiedRoomId)
+            {
+                _lastNotifiedRoomId = playerRoomId;
+                if (_cachedMapManager == null)
+                    _cachedMapManager = FindAnyObjectByType<MapManager>();
+                _cachedMapManager?.SetPlayerRoom(playerRoomId);
+            }
 
             for (int dx = -radius; dx <= radius; dx++)
             {

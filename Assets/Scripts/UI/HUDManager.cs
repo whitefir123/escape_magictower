@@ -354,13 +354,26 @@ namespace EscapeTheTower.UI
         }
 
         /// <summary>
-        /// 检测场景中的 Boss 怪物，自动激活 Boss 血条
+        /// 检测场景中的 Boss 怪物，仅当玩家进入 Boss 房间时激活血条
         /// </summary>
+        private float _bossSearchTimer;
+        private const float BOSS_SEARCH_INTERVAL = 0.5f;
+
         private void TryDetectBoss()
         {
             if (_bossHPBar == null || _bossBarTriggered) return;
 
-            // 查找场景中所有 MonsterBase，寻找 Boss 标记
+            // 前置条件：玩家必须在 Boss 房间内
+            var mapMgr = FindAnyObjectByType<MapManager>();
+            if (mapMgr == null || mapMgr.CurrentFloorData == null) return;
+            if (mapMgr.CurrentRoomID != mapMgr.CurrentFloorData.BossRoomID) return;
+
+            // 节流：每 0.5 秒查找一次，避免每帧反射开销
+            _bossSearchTimer -= Time.deltaTime;
+            if (_bossSearchTimer > 0f) return;
+            _bossSearchTimer = BOSS_SEARCH_INTERVAL;
+
+            // 查找场景中的 Boss 怪物
             var monsters = FindObjectsByType<MonsterBase>(FindObjectsSortMode.None);
             foreach (var monster in monsters)
             {
